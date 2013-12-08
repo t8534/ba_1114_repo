@@ -1,0 +1,6 @@
+[131207_1005]
+Init. 
+Lpcexpresso 1114 platform.
+The target is standalone LPC1114 DIP28.
+This init is based on Code Red SSP (SPI) example.
+Compilable, not tested.
