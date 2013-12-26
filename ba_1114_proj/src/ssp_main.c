@@ -1,5 +1,6 @@
 /****************************************************************************
  *   $Id:: ssp_main.c 4785 2010-09-03 22:39:27Z nxp21346                    $
+
  *   Project: NXP LPC11xx SSP example
  *
  *   Description:
@@ -17,6 +18,49 @@
  * warranty that such application will be suitable for the specified
  * use without further testing or modification.
 ****************************************************************************/
+
+/* Test conditions:
+ *
+ * SPI:
+ *
+ * SPI0 is used.
+ *
+ * uC for SPI1 is checked, but "pin" seems to be wrong on the board. check it.
+ *
+ *                                    pin
+ *
+ * SPI0-MOSI - PIO0_9  - MOSI/SWO - J6-5
+ * SPI0-MISO - PIO0_8  - MISO     - J6-6
+ * SPI0-SCK  - PIO2_11 - SCK      - J6-7
+ * GPIO-     - PIO0_2  - SSEL0    - J6-8
+ *
+ *
+ * SPI1-MOSI          - PIO2_3  - J6-45    // Error at lpcexpresso, but in the code below we have 2_3 wrong SPI ?
+ * SPI1-MISO          - PIO2_0(wrong ! - this is PIO2_2)  - J6-12 (wrong !)
+ * SPI1-SCK           - PIO2_1  - J16-13 (wrong ?)
+ * GPIO-              - PIO2_0  - SSEL1     - J6-8 (wrong ?)
+ *
+ *
+ * UART1-TX/I2C1-SDA - PIO1_7 - J6-9
+ * UART1-RX/I2C1-SCl - PIO1_6 - J6-10
+ *
+ *
+ * UART3-TX/I2C2-SDA - PIO0_5 - J6-40
+ * UART3-RX/I2C2-SCL - PIO0_4 - J6-41
+ *
+ *
+ *
+ *
+ * LOOPBACK_MODE - internal SPI0 loopback test mode.
+ *                 The support for this mode is defined at ssp.h/c driver.
+ *
+ *
+ * LOOPBACK_HW_MODE - SPI external test. SPI0 and SPI1 connected by hardware loop.
+ *
+ *
+ */
+
+
 #include "driver_config.h"
 #include "target_config.h"
 
@@ -53,7 +97,8 @@ void SSP_LoopbackTest( uint8_t portNum )
   GPIOSetValue( PORT0, 2, 0 );
 #endif
   i = 0;
-  while ( i <= SSP_BUFSIZE )
+  //while ( i <= SSP_BUFSIZE ) //orig arek
+  while ( i < SSP_BUFSIZE ) //arek modif
   {
 	/* to check the RXIM and TXIM interrupt, I send a block data at one time 
 	based on the FIFOSIZE(8). */
@@ -75,7 +120,8 @@ void SSP_LoopbackTest( uint8_t portNum )
 	GPIOSetValue( PORT2, 0, 0 );
 #endif
 	i = 0;
-	while ( i <= SSP_BUFSIZE )
+	//while ( i <= SSP_BUFSIZE )  //arek orig - bug
+	while ( i < SSP_BUFSIZE )     //arek: modif
 	{
 	  /* to check the RXIM and TXIM interrupt, I send a block data at one time 
 	  based on the FIFOSIZE(8). */
@@ -271,6 +317,20 @@ int main (void)
   UARTInit(115200);
 #endif
 
+
+  // LED
+  /* Initialize GPIO (sets up clock) */
+  GPIOInit();
+  /* Set LED port pin to output */
+  GPIOSetDir( LED_PORT, LED_BIT, 1 );
+
+
+  // LED
+  //GPIOSetValue( LED_PORT, LED_BIT, LED_OFF );
+  //GPIOSetValue( LED_PORT, LED_BIT, LED_ON );
+  GPIOSetValue( LED_PORT, LED_BIT, LED_OFF );
+
+
   SSP_IOConfig( SSP_NUM );	/* initialize SSP port, share pins with SPI1
 						on port2(p2.0-3). */
   SSP_Init( SSP_NUM );			
@@ -345,6 +405,9 @@ int main (void)
 	  UARTSend((uint8_t *)&temp[0], 2);
 	  UARTSend("\r\n", 2);
 #endif
+
+	  GPIOSetValue( LED_PORT, LED_BIT, LED_ON );
+
 	  while( 1 );			/* Verification failed */
 	}
   }
