@@ -1,6 +1,7 @@
 /****************************************************************************
  *   $Id:: ssp_main.c 4785 2010-09-03 22:39:27Z nxp21346                    $
 
+
  *   Project: NXP LPC11xx SSP example
  *
  *   Description:
@@ -27,18 +28,18 @@
  *
  * uC for SPI1 is checked, but "pin" seems to be wrong on the board. check it.
  *
- *                                    pin
+ *             uC pin    PCB
  *
- * SPI0-MOSI - PIO0_9  - MOSI/SWO - J6-5
- * SPI0-MISO - PIO0_8  - MISO     - J6-6
- * SPI0-SCK  - PIO2_11 - SCK      - J6-7
- * GPIO-     - PIO0_2  - SSEL0    - J6-8
+ * SPI MOSI0 - PIO0_9  - (MOSI/SWO) PIO0_9 J6-5
+ * SPI MISO0 - PIO0_8  - (MISO) PIO0_8 J6-6
+ * SPI SCK0  - PIO2_11 - (SCK) PIO2_11 J6-7   ???? something wrong in ssp.c
+ * SPI SSEL0 - PIO0_2  - (SSEL0) PIO0_2 J6-8
  *
  *
- * SPI1-MOSI          - PIO2_3  - J6-45    // Error at lpcexpresso, but in the code below we have 2_3 wrong SPI ?
- * SPI1-MISO          - PIO2_0(wrong ! - this is PIO2_2)  - J6-12 (wrong !)
- * SPI1-SCK           - PIO2_1  - J16-13 (wrong ?)
- * GPIO-              - PIO2_0  - SSEL1     - J6-8 (wrong ?)
+ * SPI MOSI1 - PIO2_3  - PIO2_3 J6-45
+ * SPI MISO1 - PIO2_2  - PIO2_2 J6-14
+ * SPI SCK1  - PIO2_1  - PIO2_1 J16-13
+ * SPI SSEL1 - PIO2_0  - PIO2_0 J6-12
  *
  *
  * UART1-TX/I2C1-SDA - PIO1_7 - J6-9
@@ -65,8 +66,14 @@
 #include "target_config.h"
 
 #include "gpio.h"
-#include "timer32.h"
+//#include "timer32.h"
 #include "ssp.h"
+#include "spi_tests.h"
+
+
+
+// old code
+#if 0
 
 #if SSP_DEBUG
 #include "uart.h"
@@ -301,11 +308,45 @@ void SSP_SEEPROMTest( uint8_t portNum )
   return;
 }
 
+#endif
+
+
 /******************************************************************************
 **   Main Function  main()
 ******************************************************************************/
 int main (void)
 {
+	boolean_t res = FALSE;
+
+
+    SystemInit();
+    /* LED test output*/
+    GPIOInit();    /* Set up clock */
+    GPIOSetDir(LED_PORT, LED_BIT, 1);
+    //GPIOSetValue(LED_PORT, LED_BIT, LED_ON);
+    GPIOSetValue(LED_PORT, LED_BIT, LED_OFF);
+
+#if 0
+    res = SPI_LoopbackInternalTest(SPI0);
+    if (FALSE == res)
+    {
+    	GPIOSetValue(LED_PORT, LED_BIT, LED_ON);
+    }
+#endif
+
+
+    res = SPI_LoopbackHardwareTest();
+    if (FALSE == res)
+    {
+    	GPIOSetValue(LED_PORT, LED_BIT, LED_ON);
+    }
+
+
+
+
+//old code
+#if 0
+
   uint32_t i;
 #if SSP_DEBUG
   int8_t temp[2];
@@ -415,7 +456,11 @@ int main (void)
   UARTSend("PASS\r\n", 6);
 #endif
 #endif			/* endif NOT TX_RX_ONLY */
-  return 0;
+
+#endif
+
+
+    return 0;
 }
 
 /******************************************************************************

@@ -1,0 +1,26 @@
+The bugs from NXP discovered in drivers etc.
+
+Version: LPCXpresso v5.2.6 [Build 2137] [2013-07-08]
+
+
+1.
+At /drivers/type.h
+
+a)
+TRUE is wrongly defined
+
+b)
+No bool definition.
+
+
+2.
+
+Not return true or false but void
+
+** Returned value:		true or false, return false if the VIC table
+**						is full and GPIO interrupt handler can be
+**						installed.
+** 
+*****************************************************************************/
+void GPIOInit( void )
+ 

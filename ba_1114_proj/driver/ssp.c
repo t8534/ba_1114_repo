@@ -50,29 +50,29 @@ volatile uint32_t interruptRxTimeoutStat1 = 0;
 *****************************************************************************/
 void SSP0_IRQHandler(void) 
 {
-  uint32_t regValue;
+    uint32_t regValue;
 
-  regValue = LPC_SSP0->MIS;
-  if ( regValue & SSPMIS_RORMIS )	/* Receive overrun interrupt */
-  {
-	interruptOverRunStat0++;
-	LPC_SSP0->ICR = SSPICR_RORIC;	/* clear interrupt */
-  }
-  if ( regValue & SSPMIS_RTMIS )	/* Receive timeout interrupt */
-  {
-	interruptRxTimeoutStat0++;
-	LPC_SSP0->ICR = SSPICR_RTIC;	/* clear interrupt */
-  }
+    regValue = LPC_SSP0->MIS;
+    if ( regValue & SSPMIS_RORMIS )	/* Receive overrun interrupt */
+    {
+	    interruptOverRunStat0++;
+	    LPC_SSP0->ICR = SSPICR_RORIC;	/* clear interrupt */
+    }
+    if ( regValue & SSPMIS_RTMIS )	/* Receive timeout interrupt */
+    {
+	    interruptRxTimeoutStat0++;
+	    LPC_SSP0->ICR = SSPICR_RTIC;	/* clear interrupt */
+    }
 
-  /* please be aware that, in main and ISR, CurrentRxIndex and CurrentTxIndex
-  are shared as global variables. It may create some race condition that main
-  and ISR manipulate these variables at the same time. SSPSR_BSY checking (polling)
-  in both main and ISR could prevent this kind of race condition */
-  if ( regValue & SSPMIS_RXMIS )	/* Rx at least half full */
-  {
-	interruptRxStat0++;		/* receive until it's empty */		
-  }
-  return;
+    /* please be aware that, in main and ISR, CurrentRxIndex and CurrentTxIndex
+    are shared as global variables. It may create some race condition that main
+    and ISR manipulate these variables at the same time. SSPSR_BSY checking (polling)
+    in both main and ISR could prevent this kind of race condition */
+    if ( regValue & SSPMIS_RXMIS )	/* Rx at least half full */
+    {
+	    interruptRxStat0++;		/* receive until it's empty */
+    }
+    return;
 }
 
 /*****************************************************************************

@@ -1,0 +1,28 @@
+
+
+[131226]
+
+1. 
+Finish with main.c and spi_tests.c
+
+
+2.
+If tests above are working,
+
+Compare lpcopen and ST32 drivers design and tests
+
+Modify spi init functions to put parameters to the function.
+Repeat tests.
+
+
+3.
+Now make a tag, and try to connect baro sensor in sensor branch
+
+
+4.
+Seems to be mess with type.h and stdint.h from GNU.
+Some drivers use one, some other.
+
+
+5.
+Skad eclipse wie ze nie trzeba zrobic include z src i startup ?
