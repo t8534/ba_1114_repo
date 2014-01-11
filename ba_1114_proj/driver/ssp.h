@@ -23,30 +23,58 @@
 
 /* There are there modes in SSP: loopback, master or slave. */
 /* Here are the combination of all the tests. 
+
 (1) LOOPBACK test:		LOOPBACK_MODE=1, TX_RX_ONLY=0, USE_CS=1;
 (2) Serial EEPROM test:	LOOPBACK_MODE=0, TX_RX_ONLY=0, USE_CS=0; (default)
 (3) TX(Master) Only:	LOOPBACK_MODE=0, SSP_SLAVE=0, TX_RX_ONLY=1, USE_CS=1;
 (4) RX(Slave) Only:		LOOPBACK_MODE=0, SSP_SLAVE=1, TX_RX_ONLY=1, USE_CS=1 */
 
-#define LOOPBACK_MODE	1		/* 1 is loopback, 0 is normal operation. */
-#define SSP_SLAVE		0		/* 1 is SLAVE mode, 0 is master mode */
-#define TX_RX_ONLY		0		/* 1 is TX or RX only depending on SSP_SLAVE
-								flag, 0 is either loopback mode or communicate
-								with a serial EEPROM. */
 
-/* if USE_CS is zero, set SSEL as GPIO that you have total control of the sequence */
-/* When test serial SEEPROM(LOOPBACK_MODE=0, TX_RX_ONLY=0), set USE_CS to 0. */
-/* When LOOPBACK_MODE=1 or TX_RX_ONLY=1, set USE_CS to 1. */
+/********* SPI0 specify section *********/
 
-#define USE_CS			1
-#define SSP_DEBUG		0
+#define SSP_LOOPBACK_MODE0  0		/* 1 is loopback, 0 is normal operation. */
+#define SSP_SLAVE0          0		/* 1 is SLAVE mode, 0 is master mode */
+#define SSP_TX_RX_ONLY0     1		/* 1 is TX or RX only depending on SSP_SLAVE
+								 * flag, 0 is either loopback mode or communicate
+								 * with a serial EEPROM.
+								 */
+
+/* If USE_CS is zero, set SSEL as GPIO that you have total control
+ * of the sequence. When test serial SEEPROM(LOOPBACK_MODE=0, TX_RX_ONLY=0),
+ * set USE_CS to 0. When LOOPBACK_MODE=1 or TX_RX_ONLY=1, set USE_CS to 1.
+ */
+#define SSP_USE_CS0			1
+
+
+/********* SPI1 specify section *********/
+
+#define SSP_LOOPBACK_MODE1	0		/* 1 is loopback, 0 is normal operation. */
+#define SSP_SLAVE1		1		/* 1 is SLAVE mode, 0 is master mode */
+#define SSP_TX_RX_ONLY1		1		/* 1 is TX or RX only depending on SSP_SLAVE
+								 * flag, 0 is either loopback mode or communicate
+								 * with a serial EEPROM.
+								 */
+
+/* If USE_CS is zero, set SSEL as GPIO that you have total control
+ * of the sequence. When test serial SEEPROM(LOOPBACK_MODE=0, TX_RX_ONLY=0),
+ * set USE_CS to 0. When LOOPBACK_MODE=1 or TX_RX_ONLY=1, set USE_CS to 1.
+ */
+#define SSP_USE_CS1			1
+
+
+
+
+#define SSP_DEBUG		0  // todo: move out, it not belongs to the driver
 
 /* SPI read and write buffer size */
-#define SSP_BUFSIZE		16
-#define FIFOSIZE		8
+//#define SSP_BUFSIZE		16
+//#define SSP_BUFSIZE		256
+#define SSP_BUFSIZE		9
 
-#define DELAY_COUNT		10
-#define MAX_TIMEOUT		0xFF
+#define SSP_FIFOSIZE		8
+
+#define SSP_DELAY_COUNT		10
+#define SSP_MAX_TIMEOUT		0xFF
 
 /* Port0.2 is the SSP select pin */
 #define SSP0_SEL        (0x1<<2)

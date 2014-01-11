@@ -15,6 +15,7 @@
 
 #define CONFIG_ENABLE_DRIVER_SSP						1
 
+
 #define CONFIG_ENABLE_DRIVER_GPIO						1
 
  /* DRIVER_CONFIG_H_ */

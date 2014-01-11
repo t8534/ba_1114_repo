@@ -5,6 +5,15 @@
 1. 
 Finish with main.c and spi_tests.c
 
+(140103)
+SPITESTS_LoopbackHardwareISPTest() tests passed.
+Up to buffer size = 256 bytes. Not tested for longer buffer
+because buffer is byte type and source cells can be init on byte - up to 256.
+Not working for buffer length not rounded to 8 bytes !
+This is probably because ISR Rx is called when half of FIFO is received - 4 bytes.
+How to solve it ?
+
+
 
 2.
 If tests above are working,

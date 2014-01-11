@@ -1,6 +1,15 @@
-[131207_1005]
+[131227_1005]
 Init. 
 Lpcexpresso 1114 platform.
 The target is standalone LPC1114 DIP28.
 This init is based on Code Red SSP (SPI) example.
 Compilable, not tested.
+
+[140103]
+SPITESTS_LoopbackHardwareISPTest() tests passed.
+Up to buffer size = 256 bytes. Not tested for longer buffer
+because buffer is byte type and source cells can be init on byte - up to 256.
+Not working for buffer length not rounded to 8 bytes !
+This is probably because ISR Rx is called when half of FIFO is received - 4 bytes.
+How to solve it ?
+
