@@ -580,10 +580,32 @@ void SSP_Receive(uint8_t portNum, uint8_t *buf, uint32_t Length)
 
 int32_t SSP_SendRecvBlock(SSP_Dev_t *SSP_Dev, uint8_t *buff, uint32_t len)
 {
+	int32_t ret = 0;
+	uint32_t tmp = 0;
 
     //todo: Improve. There is no check for timeout
-    while ( (LPC_SSP0->SR & (SSPSR_TNF|SSPSR_BSY)) != SSPSR_TNF );  //todo the flag BSY is not really checked ?
+	// Wait until Tx FIFO empty and SSP not busy.
+    while ( SSP_Dev->Device->SR & (SSPSR_TFE|SSPSR_BSY) );
 
+    // Read Rx FIFO until empty.
+    while ( SSP_Dev->Device->SR & (SSPSR_RNE|SSPSR_BSY) )
+    {
+    	tmp = SSP_Dev->Device->SR;
+    }
+
+    while (len)
+    {
+    	// Tx FIFO full
+    	if ()
+    	{
+    		// wait until SSP not busy
+    		while ( SSP_Dev->Device->SR & SSPSR_BSY );
+
+
+    	}
+
+
+    }
 
 }
 
