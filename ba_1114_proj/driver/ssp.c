@@ -577,6 +577,138 @@ void SSP_Receive(uint8_t portNum, uint8_t *buf, uint32_t Length)
 }
 #endif
 
+
+
+
+
+
+
+/******************************************************************************/
+/******************************************************************************/
+/******************************************************************************/
+
+#define FIFOSIZE		8
+
+#define SSP_ENABLE       ((uint32_t)(1<<1))
+#define SSP_DISABLE      // todo disable ((uint32_t)(1<<3))
+
+
+
+
+void SSP_Init(SSP_Dev_t *SSP_Dev)
+{
+	uint32_t regVal = 0;
+	uint32_t regSRCVal = 0;
+
+	regVal |= SSP_Dev->DataSize | SSP_Dev->FrameFormat | SSP_Dev->CPOL | SSP_Dev->CPHA;
+	regSRCVal = GetSerialClockRate(SSP_Dev->ClockRateHz);
+	regVal |= regSRCVal; //todo move it to right position.
+	SSP_Dev->Device->CR0 = regVal;
+
+	regVal = 0;
+	regVal |= SSP_Dev->LoopBackMode | SSP_Dev->Mode | SSP_Dev->SlaveOutputDisable;
+	SSP_Dev->Device->CR1 = regVal;
+
+	regVal = GetClockPrescaleFactor(SSP_Dev->ClockRateHz);
+	SSP_Dev->Device->CPSR = regVal;
+
+	/* Set Interrupt Mask Register */
+	regVal = 0;
+	regval = SSP_Dev->InterruptCondition;
+	SSP_Dev->Device->IMSC;
+
+	/* clear the RxFIFO */
+    for (i = 0; i < FIFOSIZE; i++)
+    {
+    	regVal = SSP_Dev->Device->DR;
+    }
+
+    //todo: enable interrupts at
+    //NVIC_EnableIRQ(SSP0_IRQn);
+
+
+    //todo: enable power at SYSAHBCLKCTRL bit 11 and 18
+
+    //todo: enable peripherial clock SSP0/1CLKDIV
+
+    //todo: reset - SSP_RST_N bits (0 and 2) in PRESETCTRL are set to 1.
+
+
+    /* Enable SSP */
+	SSP_Dev->Device->CR0 |= SSP_ENABLE;
+
+}
+
+
+void SSP_DeInit(SSP_Dev_t *SSP_Dev)
+{
+    /* Disble SSP */
+	SSP_Dev->Device->CR0 |= SSP_DISABLE;
+
+
+	//todo: disable power at SYSAHBCLKCTRL bit 11 and 18
+
+    //todo: disable peripherial clock SSP0/1CLKDIV
+
+    //todo: set - SSP_RST_N bits (0 and 2) in PRESETCTRL are set to 0.
+
+
+}
+
+
+void SSP_ConfigUpdate(SSP_Dev_t *SSP_Dev)
+{
+
+	//todo disable SPI
+
+
+
+
+
+
+	//todo enable SPI
+
+}
+
+
+//todo below see Status Register and Raw Interrupt Status Register
+
+
+void SSP_Send(SSP_Dev_t *SSP_Dev, uint8_t *buff, uint32_t len)
+{
+
+}
+
+
+int32_t SSP_RecvBlock(SSP_Dev_t *SSP_Dev, uint8_t *buff, uint32_t len)
+{
+
+}
+
+
+int32_t SSP_SendRecvBlock(SSP_Dev_t *SSP_Dev, uint8_t *buff, uint32_t len)
+{
+
+	// write data to the buffer
+
+	// wait for free
+
+	// read data from the buffer
+
+}
+
+
+int32_t SSP_LoopbackTest(void)
+{
+
+}
+
+
+
+
+
+
+
 /******************************************************************************
 **                            End Of File
 ******************************************************************************/
