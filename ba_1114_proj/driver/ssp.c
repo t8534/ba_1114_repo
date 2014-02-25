@@ -540,6 +540,7 @@ void SSP_Receive(uint8_t portNum, uint8_t *buf, uint32_t Length)
             // SSP0
 
 #if !SSP_LOOPBACK_MODE0
+
 #if SSP_SLAVE0
 	        while ( !(LPC_SSP0->SR & SSPSR_RNE) );
 #else
@@ -547,6 +548,7 @@ void SSP_Receive(uint8_t portNum, uint8_t *buf, uint32_t Length)
 	        /* Wait until the Busy bit is cleared */
 	        while ( (LPC_SSP0->SR & (SSPSR_BSY|SSPSR_RNE)) != SSPSR_RNE );
 #endif
+
 #else
 	        while ( !(LPC_SSP0->SR & SSPSR_RNE) );
 #endif
@@ -680,22 +682,58 @@ void SSP_ConfigUpdate(SSP_Dev_t *SSP_Dev)
 
 void SSP_Send(SSP_Dev_t *SSP_Dev, uint8_t *buff, uint32_t len)
 {
+	uint32_t tmp = 0;
+	uint8_t *buffIdx = buff;
+
+
+	while (len--) {
+
+		// Wait until Tx FIFO not full - there is a room for one frame.
+	    while ( SSP_Dev->Device->SR & SSPSR_TNF );
+
+        SSP_Dev->Device->SR = *(buffIdx++);
+
+	}
+
+    // Clear RxFIFO buffer
+    while ( SSP_Dev->Device->SR & SSPSR_RNE )
+    {
+    	tmp = SSP_Dev->Device->SR;
+    }
 
 }
 
 
 int32_t SSP_RecvBlock(SSP_Dev_t *SSP_Dev, uint8_t *buff, uint32_t len)
 {
+	int32_t ret = 0;
+	uint8_t *buffIdx = buff;
 
+
+	//todo wrong you have to wait until this is not empty and than go
+	// check this kind of bug in other places.
+
+    // If RxFIFO is not empty
+	while (len != 0 &&  SSP_Dev->Device->SR & SSPSR_RNE)
+	{
+		*(buffIdx++) = SSP_Dev->Device->SR;
+	}
+
+	return ret;
 }
 
 
-int32_t SSP_SendRecvBlock(SSP_Dev_t *SSP_Dev, uint8_t *txBuff, uint32_t txLen, uint8_t *rxBuff, uint32_t rxLen)
+//todo: add description
+// rxBuff must be not shorter than txBuff.
+//
+int32_t SSP_SendRecvBlock(SSP_Dev_t *SSP_Dev, uint8_t *txBuff, uint32_t txLen, uint8_t *rxBuff)
 {
 	int32_t ret = 0;
 	uint32_t tmp = 0;
 	uint8_t *txBuffIdx = txBuff;
 	uint8_t *rxBuffIdx = rxBuff;
+
+	//todo: add check tx/rxbuff len
 
     //todo: Improve. There is no check for timeout
 	// Wait until Tx FIFO empty and SSP not busy.
@@ -707,7 +745,7 @@ int32_t SSP_SendRecvBlock(SSP_Dev_t *SSP_Dev, uint8_t *txBuff, uint32_t txLen, u
     	tmp = SSP_Dev->Device->SR;
     }
 
-    while (txLen)
+    while (txLen--)
     {
     	// Tx FIFO full -> SSPSR_TNF = 0
     	if ( !(SSP_Dev->Device->SR & SSPSR_TNF) )
@@ -737,7 +775,7 @@ int32_t SSP_SendRecvBlock(SSP_Dev_t *SSP_Dev, uint8_t *txBuff, uint32_t txLen, u
         }
 
         SSP_Dev->Device->SR = *(txBuffIdx++);
-        txLen--;
+
     }
 
 	// wait until SSP not busy
@@ -749,12 +787,45 @@ int32_t SSP_SendRecvBlock(SSP_Dev_t *SSP_Dev, uint8_t *txBuff, uint32_t txLen, u
     	*(rxBuffIdx++) = SSP_Dev->Device->SR;
     }
 
+
+    return ret;
 }
 
 
-int32_t SSP_LoopbackTest(void)
+// txBuff must equals rxBuff
+bool_t SSP_LoopbackTest(SSP_Dev_t *SSP_Dev, uint8_t *txBuff, uint32_t txLen, uint8_t *rxBuff)
 {
+    bool_t res = FALSE;
+	uint8_t *txBuffIdx = txBuff;
+	uint8_t *rxBuffIdx = rxBuff;
 
+
+    // send
+    for (i = 0; i < txLen; i++)
+    {
+        /* Move on only if NOT busy and TX FIFO not full. */
+        while ( LPC_SSP0->SR & (SSPSR_TNF | SSPSR_BSY) );
+        LPC_SSP0->DR = *(txBuff++);
+        while ( LPC_SSP0->SR & SSPSR_BSY ); // Wait until send a frame
+                                            // todo is it really needed if we check FIFO above ?
+    }
+
+    // read
+    for (i = 0; i < txLen; i++)
+    {
+        /* As long as Receive FIFO is not empty, the frame can be always received.
+	     * If it's a loopback test, clock is shared for both TX and RX,
+	     * no need to write dummy byte to get clock to get the data
+	     * if it's a peer-to-peer communication, SSPDR needs to be written
+	     * before a read can take place.
+	     */
+        while ( !(LPC_SSP0->SR & SSPSR_RNE) ); // wait until RxFIFO not empty
+        *(rxBuff++) = LPC_SSP0->DR;
+    }
+
+    res = TRUE;
+
+    return res;
 }
 
 

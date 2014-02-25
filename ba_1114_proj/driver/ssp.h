@@ -255,8 +255,8 @@ void SSP_ConfigUpdate(SSP_Dev_t *SSP_Dev);
 
 void SSP_Send(SSP_Dev_t *SSP_Dev, uint8_t *buff, uint32_t len);
 int32_t SSP_RecvBlock(SSP_Dev_t *SSP_Dev, uint8_t *buff, uint32_t len);
-int32_t SSP_SendRecvBlock(SSP_Dev_t *SSP_Dev, uint8_t *buff, uint32_t len);
-int32_t SSP_LoopbackTest(void);
+int32_t SSP_SendRecvBlock(SSP_Dev_t *SSP_Dev, uint8_t *txBuff, uint32_t txLen, uint8_t *rxBuff)
+bool_t SSP_LoopbackTest(SSP_Dev_t *SSP_Dev, uint8_t *txBuff, uint32_t txLen, uint8_t *rxBuff);
 
 
 #endif
