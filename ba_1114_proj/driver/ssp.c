@@ -583,6 +583,14 @@ void SSP_Receive(uint8_t portNum, uint8_t *buf, uint32_t Length)
 /******************************************************************************/
 /******************************************************************************/
 
+/* SSP Status register */
+#define SSPSR_TFE       ((uint32_t)(0x1<<0))
+#define SSPSR_TNF       ((uint32_t)(0x1<<1))
+#define SSPSR_RNE       ((uint32_t)(0x1<<2))
+#define SSPSR_RFF       ((uint32_t)(0x1<<3))
+#define SSPSR_BSY       ((uint32_t)(0x1<<4))
+
+
 #define FIFOSIZE		8
 
 #define SSP_ENABLE       ((uint32_t)(1<<1))
@@ -682,39 +690,66 @@ int32_t SSP_RecvBlock(SSP_Dev_t *SSP_Dev, uint8_t *buff, uint32_t len)
 }
 
 
-int32_t SSP_SendRecvBlock(SSP_Dev_t *SSP_Dev, uint8_t *buff, uint32_t len)
+int32_t SSP_SendRecvBlock(SSP_Dev_t *SSP_Dev, uint8_t *txBuff, uint32_t txLen, uint8_t *rxBuff, uint32_t rxLen)
 {
 	int32_t ret = 0;
 	uint32_t tmp = 0;
+	uint8_t *txBuffIdx = txBuff;
+	uint8_t *rxBuffIdx = rxBuff;
 
     //todo: Improve. There is no check for timeout
 	// Wait until Tx FIFO empty and SSP not busy.
     while ( SSP_Dev->Device->SR & (SSPSR_TFE|SSPSR_BSY) );
 
     // Read Rx FIFO until empty.
-    while ( SSP_Dev->Device->SR & (SSPSR_RNE|SSPSR_BSY) )
+    while ( SSP_Dev->Device->SR & SSPSR_RNE )
     {
     	tmp = SSP_Dev->Device->SR;
     }
 
-    while (len)
+    while (txLen)
     {
-    	// Tx FIFO full
-    	if ()
+    	// Tx FIFO full -> SSPSR_TNF = 0
+    	if ( !(SSP_Dev->Device->SR & SSPSR_TNF) )
     	{
     		// wait until SSP not busy
     		while ( SSP_Dev->Device->SR & SSPSR_BSY );
 
-
+    		// all bytes are transmitted and received
+    	    // Read Rx FIFO until empty.
+    	    while ( SSP_Dev->Device->SR & SSPSR_RNE )
+    	    {
+    	    	*(rxBuffIdx++) = SSP_Dev->Device->SR;
+    	    }
     	}
 
+    	// Rx FIFO full
+        if ( SSP_Dev->Device->SR & SSPSR_RNE )
+        {
+    		// wait until SSP not busy
+    		while ( SSP_Dev->Device->SR & SSPSR_BSY );
 
+    		// Read Rx FIFO until empty.
+    	    while ( SSP_Dev->Device->SR & SSPSR_RNE )
+    	    {
+    	    	*(rxBuffIdx++) = SSP_Dev->Device->SR;
+    	    }
+        }
+
+        SSP_Dev->Device->SR = *(txBuffIdx++);
+        txLen--;
+    }
+
+	// wait until SSP not busy
+	while ( SSP_Dev->Device->SR & SSPSR_BSY );
+
+	// Read Rx FIFO until empty.
+    while ( SSP_Dev->Device->SR & SSPSR_RNE )
+    {
+    	*(rxBuffIdx++) = SSP_Dev->Device->SR;
     }
 
 }
-
-
-
 
 
 int32_t SSP_LoopbackTest(void)
