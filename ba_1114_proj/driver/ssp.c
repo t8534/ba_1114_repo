@@ -686,13 +686,11 @@ void SSP_Send(SSP_Dev_t *SSP_Dev, uint8_t *buff, uint32_t len)
 	uint8_t *buffIdx = buff;
 
 
-	while (len--) {
-
+	while (len--)
+	{
 		// Wait until Tx FIFO not full - there is a room for one frame.
 	    while ( SSP_Dev->Device->SR & SSPSR_TNF );
-
         SSP_Dev->Device->SR = *(buffIdx++);
-
 	}
 
     // Clear RxFIFO buffer
@@ -733,11 +731,10 @@ int32_t SSP_SendRecvBlock(SSP_Dev_t *SSP_Dev, uint8_t *txBuff, uint32_t txLen, u
 	uint8_t *txBuffIdx = txBuff;
 	uint8_t *rxBuffIdx = rxBuff;
 
-	//todo: add check tx/rxbuff len
 
     //todo: Improve. There is no check for timeout
 	// Wait until Tx FIFO empty and SSP not busy.
-    while ( SSP_Dev->Device->SR & (SSPSR_TFE|SSPSR_BSY) );
+    while ( SSP_Dev->Device->SR & (SSPSR_TFE | SSPSR_BSY) );
 
     // Read Rx FIFO until empty.
     while ( SSP_Dev->Device->SR & SSPSR_RNE )
@@ -747,10 +744,12 @@ int32_t SSP_SendRecvBlock(SSP_Dev_t *SSP_Dev, uint8_t *txBuff, uint32_t txLen, u
 
     while (txLen--)
     {
+    	// Is TxFIFO full.
     	// Tx FIFO full -> SSPSR_TNF = 0
     	if ( !(SSP_Dev->Device->SR & SSPSR_TNF) )
     	{
     		// wait until SSP not busy
+    		// todo: is it really need if FIFO full ?
     		while ( SSP_Dev->Device->SR & SSPSR_BSY );
 
     		// all bytes are transmitted and received
@@ -762,9 +761,11 @@ int32_t SSP_SendRecvBlock(SSP_Dev_t *SSP_Dev, uint8_t *txBuff, uint32_t txLen, u
     	}
 
     	// Rx FIFO full
-        if ( SSP_Dev->Device->SR & SSPSR_RNE )
+    	// When RxFIFO can be full, what about TxFIFO full above ?
+        if ( SSP_Dev->Device->SR & SSPSR_RFF )
         {
     		// wait until SSP not busy
+    		// todo: is it really need if FIFO full ?
     		while ( SSP_Dev->Device->SR & SSPSR_BSY );
 
     		// Read Rx FIFO until empty.
@@ -775,7 +776,6 @@ int32_t SSP_SendRecvBlock(SSP_Dev_t *SSP_Dev, uint8_t *txBuff, uint32_t txLen, u
         }
 
         SSP_Dev->Device->SR = *(txBuffIdx++);
-
     }
 
 	// wait until SSP not busy
@@ -819,9 +819,12 @@ bool_t SSP_LoopbackTest(SSP_Dev_t *SSP_Dev, uint8_t *txBuff, uint32_t txLen, uin
 	     * if it's a peer-to-peer communication, SSPDR needs to be written
 	     * before a read can take place.
 	     */
-        while ( !(LPC_SSP0->SR & SSPSR_RNE) ); // wait until RxFIFO not empty
+        while ( !(LPC_SSP0->SR & SSPSR_RNE) ); // wait if RxFIFO empty
         *(rxBuff++) = LPC_SSP0->DR;
     }
+
+    //todo: compare buffer
+
 
     res = TRUE;
 
