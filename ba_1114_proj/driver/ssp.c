@@ -689,7 +689,8 @@ void SSP_Send(SSP_Dev_t *SSP_Dev, uint8_t *buff, uint32_t len)
 	while (len--)
 	{
 		// Wait until Tx FIFO not full - there is a room for one frame.
-	    while ( SSP_Dev->Device->SR & SSPSR_TNF );
+		// TNF = 0 -> FIFO full
+	    while ( !(SSP_Dev->Device->SR & SSPSR_TNF) );
         SSP_Dev->Device->SR = *(buffIdx++);
 	}
 
@@ -753,7 +754,7 @@ int32_t SSP_SendRecvBlock(SSP_Dev_t *SSP_Dev, uint8_t *txBuff, uint32_t txLen, u
     		while ( SSP_Dev->Device->SR & SSPSR_BSY );
 
     		// all bytes are transmitted and received
-    	    // Read Rx FIFO until empty.
+    	    // Read Rx FIFO if not empty.
     	    while ( SSP_Dev->Device->SR & SSPSR_RNE )
     	    {
     	    	*(rxBuffIdx++) = SSP_Dev->Device->SR;
@@ -768,7 +769,7 @@ int32_t SSP_SendRecvBlock(SSP_Dev_t *SSP_Dev, uint8_t *txBuff, uint32_t txLen, u
     		// todo: is it really need if FIFO full ?
     		while ( SSP_Dev->Device->SR & SSPSR_BSY );
 
-    		// Read Rx FIFO until empty.
+    		// Read Rx FIFO if not empty.
     	    while ( SSP_Dev->Device->SR & SSPSR_RNE )
     	    {
     	    	*(rxBuffIdx++) = SSP_Dev->Device->SR;
@@ -781,7 +782,7 @@ int32_t SSP_SendRecvBlock(SSP_Dev_t *SSP_Dev, uint8_t *txBuff, uint32_t txLen, u
 	// wait until SSP not busy
 	while ( SSP_Dev->Device->SR & SSPSR_BSY );
 
-	// Read Rx FIFO until empty.
+	// Read Rx FIFO if not empty.
     while ( SSP_Dev->Device->SR & SSPSR_RNE )
     {
     	*(rxBuffIdx++) = SSP_Dev->Device->SR;
