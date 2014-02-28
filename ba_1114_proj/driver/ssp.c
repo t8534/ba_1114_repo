@@ -102,6 +102,20 @@
  */
 
 
+// TODO
+//
+// 1.
+// Clock setting functions and matters.
+//
+// 2.
+// Enable/Disable SPI and loopback - via update function ?
+//
+// 3.
+// IRQ support using pointer to function and how to put flags into ?
+//
+
+
+
 
 #include "driver_config.h"
 #if CONFIG_ENABLE_DRIVER_SSP==1  //todo: check is it really still need if we manage linked obj at eclipse source dir.
@@ -585,20 +599,84 @@ void SSP_Receive(uint8_t portNum, uint8_t *buf, uint32_t Length)
 /******************************************************************************/
 /******************************************************************************/
 
+/* SSP0 Masked Interrupt register */
+#define SSPMIS_RORMIS   ((uint32_t)(1U<<0))
+#define SSPMIS_RTMIS    ((uint32_t)(1U<<1))
+#define SSPMIS_RXMIS    ((uint32_t)(1U<<2))
+#define SSPMIS_TXMIS    ((uint32_t)(1U<<3))
+
+/* SSP0 Interrupt clear register */
+#define SSPICR_RORIC    ((uint32_t)(1U<<0))
+#define SSPICR_RTIC     ((uint32_t)(1U<<1))
+
 /* SSP Status register */
-#define SSPSR_TFE       ((uint32_t)(0x1<<0))
-#define SSPSR_TNF       ((uint32_t)(0x1<<1))
-#define SSPSR_RNE       ((uint32_t)(0x1<<2))
-#define SSPSR_RFF       ((uint32_t)(0x1<<3))
-#define SSPSR_BSY       ((uint32_t)(0x1<<4))
+#define SSPSR_TFE       ((uint32_t)(1U<<0))
+#define SSPSR_TNF       ((uint32_t)(1U<<1))
+#define SSPSR_RNE       ((uint32_t)(1U<<2))
+#define SSPSR_RFF       ((uint32_t)(1U<<3))
+#define SSPSR_BSY       ((uint32_t)(1U<<4))
 
 
 #define FIFOSIZE		8
 
-#define SSP_ENABLE       ((uint32_t)(1<<1))
-#define SSP_DISABLE      // todo disable ((uint32_t)(1<<3))
+
+/********************** SSP Control *****************************
+ * Used for control functionality
+ */
+
+#define SSP_CTRL_ENABLE       ((uint32_t)(1U<<1))
+#define SSP_CTRL_DISABLE      ~((uint32_t)(1U<<1))
+
+#define SSP_CTRL_LOOPBACK_ON     ((uint32_t)(1U))
+#define SSP_CTRL_LOOPBACK_OFF    ~((uint32_t)(1U))
 
 
+
+//todo
+void SSP0_IRQHandler(void)
+{
+    uint32_t regValue;
+
+    regValue = LPC_SSP0->MIS;
+    if ( regValue & SSPMIS_RORMIS )	/* Receive overrun interrupt */
+    {
+	    interruptOverRunStat0++;
+	    LPC_SSP0->ICR = SSPICR_RORIC;	/* clear interrupt */
+    }
+    if ( regValue & SSPMIS_RTMIS )	/* Receive timeout interrupt */
+    {
+	    interruptRxTimeoutStat0++;
+	    LPC_SSP0->ICR = SSPICR_RTIC;	/* clear interrupt */
+    }
+
+    /* please be aware that, in main and ISR, CurrentRxIndex and CurrentTxIndex
+    are shared as global variables. It may create some race condition that main
+    and ISR manipulate these variables at the same time. SSPSR_BSY checking (polling)
+    in both main and ISR could prevent this kind of race condition */
+    if ( regValue & SSPMIS_RXMIS )	/* Rx at least half full */
+    {
+	    interruptRxStat0++;		/* receive until it's empty */
+    }
+    return;
+}
+
+
+uint32_t GetSSPClockRate(uint32_t clockRateHz)
+{
+	uint32_t res = 0;
+
+
+	return res;
+}
+
+
+uint32_t GetSSPClockPrescaleFactor(uint32_t clockRateHz)
+{
+	uint32_t res = 0;
+
+
+	return res;
+}
 
 
 void SSP_Init(SSP_Dev_t *SSP_Dev)
@@ -607,7 +685,7 @@ void SSP_Init(SSP_Dev_t *SSP_Dev)
 	uint32_t regSRCVal = 0;
 
 	regVal |= SSP_Dev->DataSize | SSP_Dev->FrameFormat | SSP_Dev->CPOL | SSP_Dev->CPHA;
-	regSRCVal = GetSerialClockRate(SSP_Dev->ClockRateHz);
+	regSRCVal = GetSSPClockRate(SSP_Dev->ClockRateHz);
 	regVal |= regSRCVal; //todo move it to right position.
 	SSP_Dev->Device->CR0 = regVal;
 
@@ -615,7 +693,7 @@ void SSP_Init(SSP_Dev_t *SSP_Dev)
 	regVal |= SSP_Dev->LoopBackMode | SSP_Dev->Mode | SSP_Dev->SlaveOutputDisable;
 	SSP_Dev->Device->CR1 = regVal;
 
-	regVal = GetClockPrescaleFactor(SSP_Dev->ClockRateHz);
+	regVal = GetSSPClockPrescaleFactor(SSP_Dev->ClockRateHz);
 	SSP_Dev->Device->CPSR = regVal;
 
 	/* Set Interrupt Mask Register */
@@ -623,25 +701,53 @@ void SSP_Init(SSP_Dev_t *SSP_Dev)
 	regval = SSP_Dev->InterruptCondition;
 	SSP_Dev->Device->IMSC;
 
+    if (SSP_Dev->Device == LPC_SSP0)
+    {
+        /* Enable SSP0 clock */
+    	LPC_SYSCON->SYSAHBCLKCTRL |= ((uint32_t)(1<<11));
+
+        /* Set peripherial clock divider */  //todo what about
+        LPC_SYSCON->SSP0CLKDIV = ;    // 7:0 DIV SPI0_PCLK clock divider values
+                                      // 0: Disable SPI0_PCLK.
+                                      // 1: Divide by 1.
+                                      // to
+                                      // 255: Divide by 255.
+
+        /* Reset SSP0 */
+        LPC_SYSCON->PRESETCTRL &= ~((uint32_t)(1<<0));
+
+        NVIC_EnableIRQ(SSP0_IRQn);
+
+    }
+    else  // LPC_SSP1
+    {
+
+        /* Enable SSP1 clock */
+    	LPC_SYSCON->SYSAHBCLKCTRL |= ((uint32_t)(1<<18));
+
+        /* Set peripherial clock divider */
+        LPC_SYSCON->SSP1CLKDIV = ;    // 7:0 DIV SPI0_PCLK clock divider values
+                                      // 0: Disable SPI0_PCLK.
+                                      // 1: Divide by 1.
+                                      // to
+                                      // 255: Divide by 255.
+
+        /* Reset SSP1 */
+        LPC_SYSCON->PRESETCTRL &= ~((uint32_t)(1<<2));
+
+        NVIC_EnableIRQ(SSP1_IRQn);
+
+    }
+
+
 	/* clear the RxFIFO */
     for (i = 0; i < FIFOSIZE; i++)
     {
     	regVal = SSP_Dev->Device->DR;
     }
 
-    //todo: enable interrupts at
-    //NVIC_EnableIRQ(SSP0_IRQn);
-
-
-    //todo: enable power at SYSAHBCLKCTRL bit 11 and 18
-
-    //todo: enable peripherial clock SSP0/1CLKDIV
-
-    //todo: reset - SSP_RST_N bits (0 and 2) in PRESETCTRL are set to 1.
-
-
     /* Enable SSP */
-	SSP_Dev->Device->CR0 |= SSP_ENABLE;
+	SSP_Dev->Device->CR0 |= SSP_CTRL_ENABLE;
 
 }
 
@@ -649,15 +755,28 @@ void SSP_Init(SSP_Dev_t *SSP_Dev)
 void SSP_DeInit(SSP_Dev_t *SSP_Dev)
 {
     /* Disble SSP */
-	SSP_Dev->Device->CR0 |= SSP_DISABLE;
+	SSP_Dev->Device->CR0 &= SSP_CTRL_DISABLE;
 
+    if (SSP_Dev->Device == LPC_SSP0)
+    {
+        NVIC_DisableIRQ(SSP0_IRQn);
 
-	//todo: disable power at SYSAHBCLKCTRL bit 11 and 18
+        // Disable peripherial clock
+        LPC_SYSCON->SSP0CLKDIV = 0;
 
-    //todo: disable peripherial clock SSP0/1CLKDIV
+        /* Disable SSP0 clock */
+        LPC_SYSCON->SYSAHBCLKCTRL &= ~((uint32_t)(1<<11));
+    }
+    else  // SSP1
+    {
+        NVIC_DisableIRQ(SSP1_IRQn);
 
-    //todo: set - SSP_RST_N bits (0 and 2) in PRESETCTRL are set to 0.
+        // Disable peripherial clock
+        LPC_SYSCON->SSP1CLKDIV = 0;
 
+        /* Disable SSP0 clock */
+        LPC_SYSCON->SYSAHBCLKCTRL &= ~((uint32_t)(1<<18));
+    }
 
 }
 
@@ -688,7 +807,7 @@ void SSP_Send(SSP_Dev_t *SSP_Dev, uint8_t *buff, uint32_t len)
 
 	while (len--)
 	{
-		// Wait until Tx FIFO not full - there is a room for one frame.
+		// Wait if Tx FIFO is full - there is no room for put a one frame.
 		// TNF = 0 -> FIFO full
 	    while ( !(SSP_Dev->Device->SR & SSPSR_TNF) );
         SSP_Dev->Device->SR = *(buffIdx++);
@@ -793,26 +912,25 @@ int32_t SSP_SendRecvBlock(SSP_Dev_t *SSP_Dev, uint8_t *txBuff, uint32_t txLen, u
 }
 
 
-// txBuff must equals rxBuff
-bool_t SSP_LoopbackTest(SSP_Dev_t *SSP_Dev, uint8_t *txBuff, uint32_t txLen, uint8_t *rxBuff)
+bool_t SSP_LoopbackTest(SSP_Dev_t *SSP_Dev)
 {
-    bool_t res = FALSE;
-	uint8_t *txBuffIdx = txBuff;
-	uint8_t *rxBuffIdx = rxBuff;
+    bool_t res = TRUE;
+    uint8_t buffLen = FIFOSIZE;
+	uint8_t txBuff[buffLen] = {1, 2, 3, 4, 5, 6, 7, 8};
+	uint8_t rxBuff[buffLen];
 
 
-    // send
-    for (i = 0; i < txLen; i++)
+    for (i = 0; i < buffLen; i++)
     {
         /* Move on only if NOT busy and TX FIFO not full. */
-        while ( LPC_SSP0->SR & (SSPSR_TNF | SSPSR_BSY) );
-        LPC_SSP0->DR = *(txBuff++);
-        while ( LPC_SSP0->SR & SSPSR_BSY ); // Wait until send a frame
-                                            // todo is it really needed if we check FIFO above ?
+        while ( SSP_Dev->Device->SR & (SSPSR_TNF | SSPSR_BSY) );
+        SSP_Dev->Device->SR = txBuff[i];
     }
 
-    // read
-    for (i = 0; i < txLen; i++)
+	// wait until SSP not busy
+	while ( SSP_Dev->Device->SR & SSPSR_BSY );
+
+    for (i = 0; i < buffLen; i++)
     {
         /* As long as Receive FIFO is not empty, the frame can be always received.
 	     * If it's a loopback test, clock is shared for both TX and RX,
@@ -820,14 +938,22 @@ bool_t SSP_LoopbackTest(SSP_Dev_t *SSP_Dev, uint8_t *txBuff, uint32_t txLen, uin
 	     * if it's a peer-to-peer communication, SSPDR needs to be written
 	     * before a read can take place.
 	     */
-        while ( !(LPC_SSP0->SR & SSPSR_RNE) ); // wait if RxFIFO empty
-        *(rxBuff++) = LPC_SSP0->DR;
+
+    	// Read Rx FIFO if not empty.
+        while ( SSP_Dev->Device->SR & SSPSR_RNE )
+        {
+        	rxBuff[i] = SSP_Dev->Device->SR;
+        }
     }
 
-    //todo: compare buffer
-
-
-    res = TRUE;
+    for (i = 0; i < buffLen; i++)
+    {
+    	if (txBuff[i] != rxBuff[i])
+    	{
+    		res = FALSE;
+    		break;
+    	}
+    }
 
     return res;
 }
