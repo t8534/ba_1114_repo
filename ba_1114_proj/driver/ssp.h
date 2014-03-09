@@ -142,6 +142,145 @@ extern void SSP_Init( uint8_t portNum );
 extern void SSP_Send( uint8_t portNum, uint8_t *Buf, uint32_t Length );
 extern void SSP_Receive( uint8_t portNum, uint8_t *buf, uint32_t Length );
 
+
+
+/***************************************************************************/
+/***************************************************************************/
+/***************************************************************************/
+
+//
+// 1.
+// Configure pins
+//
+// 2.
+// Fill the table.
+//
+
+
+/********************** Configuration ******************************
+ * Used only for configuration
+ */
+
+/* Frame format */
+#define SSP_FRAME_SPI          0x00000000
+#define SSP_FRAME_TI           0x00000010    /* Not supported */
+#define SSP_FRAME_MICROWIRE    0x00000020    /* Not supported */
+
+/* Data size select. The numbers of bits transfered in each frame */
+#define SSP_DATABITS_4    0x00000003
+#define SSP_DATABITS_5    0x00000004
+#define SSP_DATABITS_6    0000000005
+#define SSP_DATABITS_7    0x00000006
+#define SSP_DATABITS_8    0x00000007
+#define SSP_DATABITS_9    0x00000008
+#define SSP_DATABITS_10   0x00000009
+#define SSP_DATABITS_11   0x0000000A
+#define SSP_DATABITS_12   0x0000000B
+#define SSP_DATABITS_13   0x0000000C
+#define SSP_DATABITS_14   0x0000000D
+#define SSP_DATABITS_15   0x0000000E
+#define SSP_DATABITS_16   0x0000000F
+
+
+/* Clock polarity, should be:
+ *
+ * - SPI_CPOL_HI: high level
+ * - SPI_CPOL_LO: low level
+ */
+#define SSP_SPI_CPOL_HI    ((uint32_t)(1U<<6))
+#define SSP_SPI_CPOL_LO    ((uint32_t)(0))
+
+
+/* Clock phase, used only in SPI
+ *
+ * - SPI_CPHA_FIRST: first clock edge
+ * - SPI_CPHA_SECOND: second clock edge
+ *
+ */
+#define SSP_SPI_CPHA_FIRST     ((uint32_t)(0))
+#define SSP_SPI_CPHA_SECOND    ((uint32_t)(1U<<7))
+
+
+/* Loop Back Mode
+ */
+#define SSP_LOOPBACK_ON     ((uint32_t)(1U))
+#define SSP_LOOPBACK_OFF    ((uint32_t)(0))
+
+
+/* Master/Slave mode
+ */
+#define SSP_SLAVE_MODE			((uint32_t)(0))
+#define SSP_MASTER_MODE			((uint32_t)(1U<<2))
+
+
+/* Slave Output Disable
+ */
+#define SSP_SLAVE_OUTPUT_ENABLE     ((uint32_t)(0))
+#define SSP_SLAVE_OUTPUT_DISABLE    ((uint32_t)(1U<<3))
+
+
+/* SSP Transfer Type definitions */
+typedef enum {
+	SSP_TRANSFER_POLLING = 0,
+	SSP_TRANSFER_INTERRUPT
+} SSP_TransferType_t;
+
+
+/* SSP Interrupt Condition */
+#define SSP_ISR_RORIM    ((uint32_t)(1U))
+#define SSP_ISR_RTIM     ((uint32_t)(1U<<1))
+#define SSP_ISR_RXIM     ((uint32_t)(1U<<2))
+#define SSP_ISR_RXIM     ((uint32_t)(1U<<3))
+
+
+
+
+
+
+/* a=target variable, b=bit number to act upon 0-n */
+#define BIT_SET(a,b) ((a) |= (1<<(b)))
+#define BIT_CLEAR(a,b) ((a) &= ~(1<<(b)))
+#define BIT_FLIP(a,b) ((a) ^= (1<<(b)))
+#define BIT_CHECK(a,b) ((a) & (1<<(b)))
+
+/* x=target variable, y=mask */
+#define BITMASK_SET(x,y) ((x) |= (y))
+#define BITMASK_CLEAR(x,y) ((x) &= (~(y)))
+#define BITMASK_FLIP(x,y) ((x) ^= (y))
+#define BITMASK_CHECK(x,y) ((x) & (y))
+
+
+
+/* SPI configuration structure. See defines above */
+typedef struct {
+
+	LPC_SSP_TypeDef *Device;  // LPC_SSP0 or LPC_SSP1
+    uint32_t FrameFormat;
+	uint32_t DataSize;
+	uint32_t CPOL;
+	uint32_t CPHA;
+	uint32_t LoopBackMode;
+	uint32_t Mode;
+	uint32_t ClockRateHz;	/* Clock rate,in Hz, should not exceed TODO: (SPI peripheral clock)/8 */
+	uint32_t SlaveOutputDisable;
+	SSI_TransferType_t transferType;
+	uint32_t InterruptCondition;
+	void (*ISR_Processing)( void );
+
+} SSP_Dev_t;
+
+
+
+void SSP_Init(SSP_Dev_t *SSP_Dev);
+void SSP_DeInit(SSP_Dev_t *SSP_Dev);
+void SSP_ConfigUpdate(SSP_Dev_t *SSP_Dev);
+
+void SSP_Send(SSP_Dev_t *SSP_Dev, uint8_t *buff, uint32_t len);
+int32_t SSP_RecvBlock(SSP_Dev_t *SSP_Dev, uint8_t *buff, uint32_t len);
+int32_t SSP_SendRecvBlock(SSP_Dev_t *SSP_Dev, uint8_t *txBuff, uint32_t txLen, uint8_t *rxBuff);
+bool_t SSP_LoopbackTest(SSP_Dev_t *SSP_Dev);
+
+
 #endif
 #endif  /* __SSP_H__ */
 /*****************************************************************************
