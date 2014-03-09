@@ -578,6 +578,7 @@ void SSP_Receive(uint8_t portNum, uint8_t *buf, uint32_t Length)
 #endif
 
 
+
 int32_t SSP_SendRecvBlock(SSP_Dev_t *SSP_Dev, uint8_t *buff, uint32_t len)
 {
 	int32_t ret = 0;
