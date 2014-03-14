@@ -55,6 +55,29 @@
  * UART3-RX/I2C2-SCL - PIO0_4 - J6-41
  *
  *
+ * The clock settings:
+ * -------------------
+ *
+ * See p.22 UM10389 manual.
+ *
+ * XTAL = 12 MHz
+ *
+ * PLL is used. The sys_pllclkout = 48 MHz
+ * main clock = 48 MHz
+ *
+ * System Clock Divider = 1 ->  system clock = 48 MHz
+ *
+ *
+ * SSP0 peripherial clock divider = 2 -> SPI0 Peripherial Clock SPI0_PCLK = 24 MHz
+ * Following BitFreq  formula for SPI0:
+ *
+ * BitFreq = SPI0_PCLK / (CPSDVSR x (SCR + 1)) = SPI0_PCLK/16 = 24/16 = 1.5 Mbps
+ * CPSDVSR = 2
+ * SCR = 7
+ *
+ *
+ *
+ *
  * Additional notes:
  * =================
  *
