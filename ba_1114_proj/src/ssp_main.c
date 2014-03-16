@@ -167,7 +167,7 @@
 #include "gpio.h"
 #include "ssp.h"
 #include "spi_tests.h"
-
+#include "mpl115a.h"
 
 
 
@@ -177,7 +177,7 @@
 int main (void)
 {
 	boolean_t res = FALSE;
-
+	double pressure;
 
     SystemInit();
     /* LED test output*/
@@ -186,32 +186,19 @@ int main (void)
     //GPIOSetValue(LED_PORT, LED_BIT, LED_ON);
     GPIOSetValue(LED_PORT, LED_BIT, LED_OFF);
 
-#if 0
-    res = SPITESTS_LoopbackInternalTest(SPI1);
-    if (FALSE == res)
+
+    MPL115AIntitalize();
+    MPL115AReadCoeffs();
+
+    while (1)
     {
-    	GPIOSetValue(LED_PORT, LED_BIT, LED_ON);
-    }
-#endif
+        MPL115AReadPressureAndTempADC();
+        MPL115ACalculatePressure(&pressure);
+
+        //delay
 
 
-#if 0
-    res = SPITESTS_LoopbackHardwarePoolingTest();
-    if (FALSE == res)
-    {
-    	GPIOSetValue(LED_PORT, LED_BIT, LED_ON);
-    }
-#endif
-
-
-    res = SPITESTS_LoopbackHardwareISPTest();
-    if (FALSE == res)
-    {
-    	GPIOSetValue(LED_PORT, LED_BIT, LED_ON);
-    }
-
-
-    //while (1) {};  // For tests, to wait until received timeout ISR will be generated.
+    };
 
 
     return 0;
