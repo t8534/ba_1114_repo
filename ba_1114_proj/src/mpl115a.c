@@ -17,6 +17,7 @@
 #include "mpl115a.h"
 
 
+#define	SPI0    0U
 
 #define SPI_READ    0x80
 

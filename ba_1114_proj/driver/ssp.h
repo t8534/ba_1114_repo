@@ -141,6 +141,7 @@ extern void SSP_IOConfig( uint8_t portNum );
 extern void SSP_Init( uint8_t portNum );
 extern void SSP_Send( uint8_t portNum, uint8_t *Buf, uint32_t Length );
 extern void SSP_Receive( uint8_t portNum, uint8_t *buf, uint32_t Length );
+uint8_t SSPSendRecvByte(uint8_t outb);
 
 #endif
 #endif  /* __SSP_H__ */
