@@ -34,7 +34,7 @@
 
 #define SSP_LOOPBACK_MODE0  0		/* 1 is loopback, 0 is normal operation. */
 #define SSP_SLAVE0          0		/* 1 is SLAVE mode, 0 is master mode */
-#define SSP_TX_RX_ONLY0     1		/* 1 is TX or RX only depending on SSP_SLAVE
+#define SSP_TX_RX_ONLY0     0		/* 1 is TX or RX only depending on SSP_SLAVE
 								 * flag, 0 is either loopback mode or communicate
 								 * with a serial EEPROM.
 								 */
