@@ -35,3 +35,12 @@ Some drivers use one, some other.
 
 5.
 Skad eclipse wie ze nie trzeba zrobic include z src i startup ?
+
+
+[140316]
+branch: get_main_clock
+
+Changes made.
+Ready for deep  tests.
+
+

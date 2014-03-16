@@ -60,7 +60,14 @@ extern void SystemInit (void);
  */
 #define CONFIG_ENABLE_CMSIS_SYSTEMCORECLOCKUPDATE	1
 //#define CONFIG_CMSIS_SET_SYSTEMCORECLOCK_DEFAULT	48000000
+//#define CONFIG_CMSIS_SET_MAINCLOCK_DEFAULT        48000000
 extern void SystemCoreClockUpdate (void);
+
+
+uint32_t GetSystemCoreClock(void);
+uint32_t GetMainClock(void);
+
+
 
 /*
 //-------- <<< Use Configuration Wizard in Context Menu >>> ------------------

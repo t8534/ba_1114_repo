@@ -184,13 +184,28 @@
 /*----------------------------------------------------------------------------
   Clock Variable definitions
  *----------------------------------------------------------------------------*/
-uint32_t SystemCoreClock = __SYSTEM_CLOCK;/*!< System Clock Frequency (Core Clock)*/
+
+/* System Clock Frequency (Core Clock).
+ * This is Main Clock divided by System Clock Divider and delivery Cortex core
+ * and GPIO clock signal. This is not other peripherials clock.
+ */
+uint32_t SystemCoreClock = __SYSTEM_CLOCK;
+
+/* The Main Clock - the output from PLL, or XTAL, watchdog osc etc.
+ * This is input to System Clock Divider, and peripherials excluding GPIO.
+ */
+uint32_t MainClock = __MAIN_CLOCK;            /*!< Main Clock Frequency just */
+
 
 #if CONFIG_ENABLE_CMSIS_SYSTEMCORECLOCKUPDATE==1 || !defined(CONFIG_ENABLE_CMSIS_SYSTEMCORECLOCKUPDATE)
 /*----------------------------------------------------------------------------
   Clock functions
  *----------------------------------------------------------------------------*/
-void SystemCoreClockUpdate (void)            /* Get Core Clock Frequency      */
+
+/* The function update MainClock and SystemCoreClock variable by reading uP
+ * registers configuration.
+ */
+void SystemCoreClockUpdate (void)
 {
   uint32_t wdt_osc = 0;
 
@@ -217,64 +232,65 @@ void SystemCoreClockUpdate (void)            /* Get Core Clock Frequency      */
  
   switch (LPC_SYSCON->MAINCLKSEL & 0x03) {
     case 0:                             /* Internal RC oscillator             */
-      SystemCoreClock = __IRC_OSC_CLK;
+      MainClock = __IRC_OSC_CLK;
       break;
     case 1:                             /* Input Clock to System PLL          */
       switch (LPC_SYSCON->SYSPLLCLKSEL & 0x03) {
           case 0:                       /* Internal RC oscillator             */
-            SystemCoreClock = __IRC_OSC_CLK;
+        	  MainClock = __IRC_OSC_CLK;
             break;
           case 1:                       /* System oscillator                  */
-            SystemCoreClock = __SYS_OSC_CLK;
+        	  MainClock = __SYS_OSC_CLK;
             break;
           case 2:                       /* WDT Oscillator                     */
-            SystemCoreClock = wdt_osc;
+        	  MainClock = wdt_osc;
             break;
           case 3:                       /* Reserved                           */
-            SystemCoreClock = 0;
+        	  MainClock = 0;
             break;
       }
       break;
     case 2:                             /* WDT Oscillator                     */
-      SystemCoreClock = wdt_osc;
+    	MainClock = wdt_osc;
       break;
     case 3:                             /* System PLL Clock Out               */
       switch (LPC_SYSCON->SYSPLLCLKSEL & 0x03) {
           case 0:                       /* Internal RC oscillator             */
             if (LPC_SYSCON->SYSPLLCTRL & 0x180) {
-              SystemCoreClock = __IRC_OSC_CLK;
+            	MainClock = __IRC_OSC_CLK;
             } else {
-              SystemCoreClock = __IRC_OSC_CLK * ((LPC_SYSCON->SYSPLLCTRL & 0x01F) + 1);
+            	MainClock = __IRC_OSC_CLK * ((LPC_SYSCON->SYSPLLCTRL & 0x01F) + 1);
             }
             break;
           case 1:                       /* System oscillator                  */
             if (LPC_SYSCON->SYSPLLCTRL & 0x180) {
-              SystemCoreClock = __SYS_OSC_CLK;
+            	MainClock = __SYS_OSC_CLK;
             } else {
-              SystemCoreClock = __SYS_OSC_CLK * ((LPC_SYSCON->SYSPLLCTRL & 0x01F) + 1);
+            	MainClock = __SYS_OSC_CLK * ((LPC_SYSCON->SYSPLLCTRL & 0x01F) + 1);
             }
             break;
           case 2:                       /* WDT Oscillator                     */
             if (LPC_SYSCON->SYSPLLCTRL & 0x180) {
-              SystemCoreClock = wdt_osc;
+            	MainClock = wdt_osc;
             } else {
-              SystemCoreClock = wdt_osc * ((LPC_SYSCON->SYSPLLCTRL & 0x01F) + 1);
+            	MainClock = wdt_osc * ((LPC_SYSCON->SYSPLLCTRL & 0x01F) + 1);
             }
             break;
           case 3:                       /* Reserved                           */
-            SystemCoreClock = 0;
+        	  MainClock = 0;
             break;
       }
       break;
   }
 
-  SystemCoreClock /= LPC_SYSCON->SYSAHBCLKDIV;  
+  SystemCoreClock = MainClock / LPC_SYSCON->SYSAHBCLKDIV;
   LPC_SYSCON->SYSTCKCAL = (SystemCoreClock / 100) - 1;
 }
 #else
 void SystemCoreClockUpdate (void)            /* Get Core Clock Frequency      */
 {
 	SystemCoreClock = CONFIG_CMSIS_SET_SYSTEMCORECLOCK_DEFAULT;
+	MainClock = CONFIG_CMSIS_SET_MAINCLOCK_DEFAULT;
 }
 #endif
 #if CONFIG_ENABLE_CMSIS_SYSTEMINIT==1 || !defined(CONFIG_ENABLE_CMSIS_SYSTEMINIT)
@@ -351,3 +367,23 @@ void SystemInit (void)
 	  SystemCoreClockUpdate();
 }
 #endif
+
+
+/* System Clock Frequency (Core Clock).
+ * This is Main Clock divided by System Clock Divider and delivery Cortex core
+ * and GPIO clock signal. This is not other peripherials clock.
+ */
+uint32_t GetSystemCoreClock(void)
+{
+	return SystemCoreClock;
+}
+
+/* The Main Clock - the output from PLL, or XTAL, watchdog osc etc.
+ * This is input to System Clock Divider, and peripherials excluding GPIO.
+ */
+uint32_t GetMainClock(void)
+{
+	return MainClock;
+}
+
+

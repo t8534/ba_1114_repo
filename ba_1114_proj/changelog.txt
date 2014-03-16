@@ -13,3 +13,6 @@ Not working for buffer length not rounded to 8 bytes !
 This is probably because ISR Rx is called when half of FIFO is received - 4 bytes.
 How to solve it ?
 
+
+
+
