@@ -665,6 +665,40 @@ uint32_t GetSSPClockRate(uint32_t clockRateHz)
 	uint32_t res = 0;
 
 
+	uint32_t main_clk, ssp_div;
+	uint32_t ssp_clk, cr0_div, cmp_clk, prescale;
+
+	main_clk = Chip_Clock_GetMainClockRate();
+#ifdef SSP1_SUPPORT
+	if (pSSP == LPC_SSP1) {
+		ssp_div = Chip_Clock_GetSSP1ClockDiv();
+	}
+	else
+#endif
+	{
+		ssp_div = Chip_Clock_GetSSP0ClockDiv();
+	}
+
+	ssp_clk = main_clk / ssp_div;
+
+	cr0_div = 0;
+	cmp_clk = 0xFFFFFFFF;
+	prescale = 2;
+
+	while (cmp_clk > bitRate) {
+		cmp_clk = ssp_clk / ((cr0_div + 1) * prescale);
+		if (cmp_clk > bitRate) {
+			cr0_div++;
+			if (cr0_div > 0xFF) {
+				cr0_div = 0;
+				prescale += 2;
+			}
+		}
+	}
+
+	IP_SSP_Set_ClockRate(pSSP, cr0_div, prescale);
+
+
 	return res;
 }
 
