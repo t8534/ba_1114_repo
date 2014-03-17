@@ -8,6 +8,12 @@
 //
 //******************************************************************************
 
+// TODO
+//
+// 1.
+// Update with original code from app note
+//
+
 #include "driver_config.h"  //todo describe this include MUST BE, and if SSP driver will be not ON in there,
                             // than all the ssp.h and .c file will be not add to compile, so during compilation
                             // of this file, there will be error. This approach is very buggy.
@@ -105,11 +111,11 @@ void MPL115AIntitalize()
 // Read ADCs values
 int MPL115AReadPressureAndTempADC()
 {
-	int del;
+	uint32_t del;
 	//Send command to convert pressure and temperature
 	MPL115AWrite(0x12, 0x00);
 	
-	for (del=0; del < 0xFFF; del++);	// wait for A-D conversion to take place
+	for (del = 0; del < 500000; del++);	// wait for A-D conversion to take place
 	                                    // todo can be too short ! check it
 
 	//Read converted values

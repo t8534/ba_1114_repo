@@ -178,6 +178,8 @@ int main (void)
 {
 	boolean_t res = FALSE;
 	double pressure;
+	uint32_t i = 0;
+	uint32_t k = 0;
 
     SystemInit();
     /* LED test output*/
@@ -190,16 +192,25 @@ int main (void)
     MPL115AIntitalize();
     MPL115AReadCoeffs();
 
+    // delay
+    for (i = 0; i < 65536; i++)
+    {
+        k += 1;
+    }
+
+    MPL115AReadPressureAndTempADC();
+    MPL115ACalculatePressure(&pressure);
+
+    while (1) {}
+
+#if 0
     while (1)
     {
         MPL115AReadPressureAndTempADC();
         MPL115ACalculatePressure(&pressure);
-
         //delay
-
-
     };
-
+#endif
 
     return 0;
 }
