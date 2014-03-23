@@ -181,6 +181,7 @@ int main (void)
 	uint32_t i = 0;
 	uint32_t k = 0;
 
+
     SystemInit();
     /* LED test output*/
     GPIOInit();    /* Set up clock */
@@ -192,11 +193,15 @@ int main (void)
     MPL115AIntitalize();
     MPL115AReadCoeffs();
 
+    GPIOSetValue(LED_PORT, LED_BIT, LED_ON);
+
+
     // delay
-    for (i = 0; i < 65536; i++)
+    for (i = 0; i < 500000; i++)
     {
         k += 1;
     }
+
 
     MPL115AReadPressureAndTempADC();
     MPL115ACalculatePressure(&pressure);

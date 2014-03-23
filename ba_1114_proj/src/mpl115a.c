@@ -8,11 +8,32 @@
 //
 //******************************************************************************
 
+/*
+ * The sensor MPL115a is connected by SPI1 on lpcexpresso 1114 board.
+ * SPI0 is shared with debugger pins.
+ *
+ * SPI                                         MPL115a Kamami
+ *
+ * SPI MOSI1 - PIO2_3  - PIO2_3 J6-45   -----  SDA/SDI (2)
+ * SPI MISO1 - PIO2_2  - PIO2_2 J6-14   -----  SDO     (4)
+ * SPI SCK1  - PIO2_1  - PIO2_1 J16-13  -----  SCL/CLK (5)
+ * SPI SSEL1 - PIO2_0  - PIO2_0 J6-12   -----  CS_RES  (2)
+ *
+ *
+ *
+ */
+
+
 // TODO
 //
 // 1.
+// Tune timings
+
+// 2.
 // Update with original code from app note
 //
+//
+
 
 #include "driver_config.h"  //todo describe this include MUST BE, and if SSP driver will be not ON in there,
                             // than all the ssp.h and .c file will be not add to compile, so during compilation
@@ -24,6 +45,7 @@
 
 
 #define	SPI0    0U
+#define	SPI1    1U
 
 #define SPI_READ    0x80
 
@@ -44,7 +66,7 @@ void CSLow(void)
 {
     /* Set SPI0 SSEL pin to output low. */
     //todo is it not automatically set by SSP periph
-    GPIOSetValue(PORT0, 2, 0);
+    GPIOSetValue(PORT2, 0, 0);
     return;
 }
 
@@ -53,7 +75,7 @@ void CSHi(void)
 {
     /* Set SPI0 SSEL pin to output high. */
     //todo is it not automatically set by SSP periph
-    GPIOSetValue(PORT0, 2, 1);
+    GPIOSetValue(PORT2, 0, 1);
     return;
 }
 
@@ -102,8 +124,8 @@ uint8_t MPL115ARead(uint8_t address)
 void MPL115AIntitalize()
 {
 	CSHi();
-    SSP_IOConfig(SPI0);
-    SSP_Init(SPI0);
+    SSP_IOConfig(SPI1);
+    SSP_Init(SPI1);
 	CSHi();  // todo which one ?
 }
 

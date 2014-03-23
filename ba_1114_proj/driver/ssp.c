@@ -578,7 +578,7 @@ void SSP_Receive(uint8_t portNum, uint8_t *buf, uint32_t Length)
 #endif
 
 
-// Only for SSP0 !
+// Only for SSP1 !
 //
 uint8_t SSPSendRecvByte(uint8_t outb)
 {
@@ -587,14 +587,14 @@ uint8_t SSPSendRecvByte(uint8_t outb)
 	//todo you can fifo buffer here, to be sure this is empty
 
     /* Move on only if NOT busy and TX FIFO not full. */
-    while ( (LPC_SSP0->SR & (SSPSR_TNF|SSPSR_BSY)) != SSPSR_TNF );
+    while ( (LPC_SSP1->SR & (SSPSR_TNF|SSPSR_BSY)) != SSPSR_TNF );
 
-    LPC_SSP0->DR = outb;
+    LPC_SSP1->DR = outb;
 
     // wait until fifo not empty and periph no busy
-    while ( (LPC_SSP0->SR & (SSPSR_BSY|SSPSR_RNE)) != SSPSR_RNE );
+    while ( (LPC_SSP1->SR & (SSPSR_BSY|SSPSR_RNE)) != SSPSR_RNE );
 
-    res = LPC_SSP0->DR;
+    res = LPC_SSP1->DR;
 
 
   	return res;

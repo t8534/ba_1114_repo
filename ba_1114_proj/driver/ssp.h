@@ -48,9 +48,9 @@
 
 /********* SPI1 specify section *********/
 
-#define SSP_LOOPBACK_MODE1	0		/* 1 is loopback, 0 is normal operation. */
-#define SSP_SLAVE1		1		/* 1 is SLAVE mode, 0 is master mode */
-#define SSP_TX_RX_ONLY1		1		/* 1 is TX or RX only depending on SSP_SLAVE
+#define SSP_LOOPBACK_MODE1  0		/* 1 is loopback, 0 is normal operation. */
+#define SSP_SLAVE1          0		/* 1 is SLAVE mode, 0 is master mode */
+#define SSP_TX_RX_ONLY1     0		/* 1 is TX or RX only depending on SSP_SLAVE
 								 * flag, 0 is either loopback mode or communicate
 								 * with a serial EEPROM.
 								 */
@@ -59,7 +59,7 @@
  * of the sequence. When test serial SEEPROM(LOOPBACK_MODE=0, TX_RX_ONLY=0),
  * set USE_CS to 0. When LOOPBACK_MODE=1 or TX_RX_ONLY=1, set USE_CS to 1.
  */
-#define SSP_USE_CS1			1
+#define SSP_USE_CS1			0
 
 
 
