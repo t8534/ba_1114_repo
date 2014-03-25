@@ -832,7 +832,8 @@ void SSP_ConfigUpdate(SSP_Dev_t *SSP_Dev)
 
 //todo below see Status Register and Raw Interrupt Status Register
 
-
+//todo: the buffer should be 16 bit wide, because the frame can be max 16 bit.
+//todo: Is this function really usable ?
 void SSP_Send(SSP_Dev_t *SSP_Dev, uint8_t *buff, uint32_t len)
 {
 	uint32_t tmp = 0;
@@ -855,7 +856,8 @@ void SSP_Send(SSP_Dev_t *SSP_Dev, uint8_t *buff, uint32_t len)
 
 }
 
-
+//todo: the buffer should be 16 bit wide, because the frame can be max 16 bit.
+//todo: Is this function really usable ?
 int32_t SSP_RecvBlock(SSP_Dev_t *SSP_Dev, uint8_t *buff, uint32_t len)
 {
 	int32_t ret = 0;
@@ -975,6 +977,29 @@ bool_t SSP_LoopbackTest(SSP_Dev_t *SSP_Dev)
 
     return res;
 }
+
+//todo: the buffer should be 16 bit wide, because the frame can be max 16 bit.
+uint16_t SSPSendRecvFrame(SSP_Dev_t *SSP_Dev, uint16_t val)
+{
+	uint8_t res = 0;
+
+	//todo you have to check fifo buffer here, to be sure this is empty
+
+    /* Move on only if NOT busy and TX FIFO not full. - todo wrong because we can
+     * read answer from the previous frame. fifo should be empty before send frame */
+    while ( (LPC_SSP1->SR & (SSPSR_TNF|SSPSR_BSY)) != SSPSR_TNF );
+
+    LPC_SSP1->DR = outb;
+
+    // wait until fifo not empty and periph no busy
+    while ( (LPC_SSP1->SR & (SSPSR_BSY|SSPSR_RNE)) != SSPSR_RNE );
+
+    res = LPC_SSP1->DR;
+
+
+  	return res;
+}
+
 
 
 void SSP_WriteRead(unsigned int *i_buff, unsigned int *o_buff, unsigned int len)
