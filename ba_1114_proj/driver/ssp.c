@@ -977,6 +977,37 @@ bool_t SSP_LoopbackTest(SSP_Dev_t *SSP_Dev)
 }
 
 
+void SSP_WriteRead(unsigned int *i_buff, unsigned int *o_buff, unsigned int len)
+{
+	unsigned int t_idx = 0;
+
+
+	while (len)
+	{
+		t_idx = 0;
+
+		while (len > 0 && t_idx < FIFO_SIZE)
+		{
+            SSP_Write();
+            t_idx++;
+            len--;
+		}
+
+		printf("\n");
+
+		while (t_idx)
+		{
+            SSP_Read();
+            t_idx--;
+		}
+
+		printf(" Nowe FIFO \n");
+	}
+
+}
+
+
+
 /******************************************************************************
 **                            End Of File
 ******************************************************************************/
