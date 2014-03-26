@@ -659,7 +659,7 @@ void SSP0_IRQHandler(void)
     return;
 }
 
-
+//todo
 uint32_t GetSSPClockRate(uint32_t clockRateHz)
 {
 	uint32_t res = 0;
@@ -703,6 +703,7 @@ uint32_t GetSSPClockRate(uint32_t clockRateHz)
 }
 
 
+//todo
 uint32_t GetSSPClockPrescaleFactor(uint32_t clockRateHz)
 {
 	uint32_t res = 0;
@@ -987,12 +988,12 @@ uint16_t SSPSendRecvFrame(SSP_Dev_t *SSP_Dev, uint16_t val)
 
     /* Move on only if NOT busy and TX FIFO not full. - todo wrong because we can
      * read answer from the previous frame. fifo should be empty before send frame */
-    while ( (LPC_SSP1->SR & (SSPSR_TNF|SSPSR_BSY)) != SSPSR_TNF );
+    while ( (LPC_SSP1->SR & (SSPSR_TNF | SSPSR_BSY)) != SSPSR_TNF );
 
     LPC_SSP1->DR = outb;
 
     // wait until fifo not empty and periph no busy
-    while ( (LPC_SSP1->SR & (SSPSR_BSY|SSPSR_RNE)) != SSPSR_RNE );
+    while ( (LPC_SSP1->SR & (SSPSR_BSY | SSPSR_RNE)) != SSPSR_RNE );
 
     res = LPC_SSP1->DR;
 
@@ -1001,11 +1002,23 @@ uint16_t SSPSendRecvFrame(SSP_Dev_t *SSP_Dev, uint16_t val)
 }
 
 
-
-void SSP_WriteRead(unsigned int *i_buff, unsigned int *o_buff, unsigned int len)
+// todo: add timeout
+void SSP_WriteRead(SSP_Dev_t *SSP_Dev, uint16_t *tx_buff, uint16_t *rx_buff, uint16_t len)
 {
-	unsigned int t_idx = 0;
+	uint16_t t_idx = 0;
+	uint32_t tmp = 0;
 
+	uint16_t *tx_buff_ptr = tx_buff;
+	uint16_t *rx_buff_ptr = rx_buff;
+
+	// Wait until Tx FIFO empty and SSP not busy.
+    while ( SSP_Dev->Device->SR & (SSPSR_TFE | SSPSR_BSY) );
+
+    // Read Rx FIFO until empty and wait until SSP not busy.
+    while ( SSP_Dev->Device->SR & (SSPSR_RNE | SSPSR_BSY) )
+    {
+    	tmp = SSP_Dev->Device->SR;
+    }
 
 	while (len)
 	{
@@ -1013,20 +1026,22 @@ void SSP_WriteRead(unsigned int *i_buff, unsigned int *o_buff, unsigned int len)
 
 		while (len > 0 && t_idx < FIFO_SIZE)
 		{
-            SSP_Write();
+            SSP_Dev->Device->SR = tx_buff++;
             t_idx++;
             len--;
 		}
 
-		printf("\n");
+		// wait until Tx FIFO will be completely sent (empty) and SSP not Busy
+	    while ( SSP_Dev->Device->SR & (SSPSR_TFE | SSPSR_BSY) );
 
 		while (t_idx)
 		{
-            SSP_Read();
+			// wait until rx_fifo not empty
+			while ( (LPC_SSP1->SR & SSPSR_RNE) != SSPSR_RNE );
+			rx_buff++ = SSP_Dev->Device->SR;
             t_idx--;
 		}
 
-		printf(" Nowe FIFO \n");
 	}
 
 }
