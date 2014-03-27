@@ -123,10 +123,35 @@ uint8_t MPL115ARead(uint8_t address)
 // Initialization of communication interface 
 void MPL115AIntitalize()
 {
+#if 0
 	CSHi();
     SSP_IOConfig(SPI1);
     SSP_Init(SPI1);
 	CSHi();  // todo which one ?
+#endif
+
+
+	SSP_Dev_t SSP_Dev;
+
+	SSP_Dev.Device = LPC_SSP1;
+	SSP_Dev.FrameFormat = SSP_FRAME_SPI;
+	SSP_Dev.DataSize = SSP_DATABITS_8;
+	SSP_Dev.CPOL = ;
+	SSP_Dev.CPHA = ;
+	SSP_Dev.LoopBackMode = SSP_LOOPBACK_OFF;
+	SSP_Dev.Mode = SSP_MASTER_MODE;
+	SSP_Dev.ClockRateHz = ???;	/* Clock rate,in Hz, should not exceed TODO: (SPI peripheral clock)/8 */
+	SSP_Dev.SlaveOutputDisable;
+	SSP_Dev.transferType = SSP_TRANSFER_POLLING;
+	SSP_Dev.InterruptCondition = ???;
+	SSP_Dev.ISR_Processing = NULL;
+	SSP_Dev.IO_pins.MOSI_pin =   ;
+	SSP_Dev.IO_pins.MISO_pin =   ;
+	SSP_Dev.IO_pins.SCK_pin =   ;
+	SSP_Dev.IO_pins.SSEL_pin =   ;
+
+	SSP_Init(&SSP_Dev);
+
 }
 
 // MPL115AReadPressureAndTempADC

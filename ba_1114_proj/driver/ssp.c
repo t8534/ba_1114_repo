@@ -713,11 +713,135 @@ uint32_t GetSSPClockPrescaleFactor(uint32_t clockRateHz)
 }
 
 
+void SSP_IO_Init(SSP_IO_pins_t pin)
+{
+    switch (pin) {
+
+        case SSP_MOSI0_PIN_0_9:
+        {
+            LPC_IOCON->PIO0_9 &= ~0x07;
+            LPC_IOCON->PIO0_9 |= 0x01;
+        	break;
+        }
+
+        case SSP_MISO0_PIN_0_8:
+        {
+            LPC_IOCON->PIO0_8 &= ~0x07;
+            LPC_IOCON->PIO0_8 |= 0x01;
+        	break;
+        }
+
+        case SSP_SCK0_PIN_0_6:
+        {
+        	LPC_IOCON->SCK_LOC &= ~0x03;
+        	LPC_IOCON->SCK_LOC |= 0x02;
+            LPC_IOCON->PIO0_6 &= ~0x07;
+            LPC_IOCON->PIO0_6 |= 0x02;
+        	break;
+        }
+
+        case SSP_SCK0_PIN_0_10:
+        {
+        	LPC_IOCON->SCK_LOC &= ~0x03;
+        	LPC_IOCON->SCK_LOC |= 0x00;
+            LPC_IOCON->PIO0_10 &= ~0x07;
+            LPC_IOCON->PIO0_10 |= 0x02;
+        	break;
+        }
+
+        case SSP_SCK0_PIN_2_11:
+        {
+        	LPC_IOCON->SCK_LOC &= ~0x03;
+        	LPC_IOCON->SCK_LOC |= 0x01;
+            LPC_IOCON->PIO2_11 &= ~0x07;
+            LPC_IOCON->PIO2_11 |= 0x01;
+        	break;
+        }
+
+        case SSP_SSEL0_PIN_0_2:
+        {
+            LPC_IOCON->PIO0_2 &= ~0x07;
+            LPC_IOCON->PIO0_2 |= 0x01;
+        	break;
+        }
+
+
+        case SSP_MOSI1_PIN_2_3:
+        {
+            LPC_IOCON->PIO2_3 &= ~0x07;
+            LPC_IOCON->PIO2_3 |= 0x02;
+        	break;
+        }
+
+        case SSP_MOSI1_PIN_1_9:
+        {
+            LPC_IOCON->PIO1_9 &= ~0x07;
+            LPC_IOCON->PIO1_9 |= 0x02;
+        	break;
+        }
+
+        case SSP_MISO1_PIN_2_2:
+        {
+            LPC_IOCON->PIO2_2 &= ~0x07;
+            LPC_IOCON->PIO2_2 |= 0x02;
+        	break;
+        }
+
+        case SSP_MISO1_PIN_1_10:
+        {
+            LPC_IOCON->PIO1_10 &= ~0x07;
+            LPC_IOCON->PIO1_10 |= 0x03;
+        	break;
+        }
+
+        case SSP_SCK1_PIN_2_1:
+        {
+            LPC_IOCON->PIO2_1 &= ~0x07;
+            LPC_IOCON->PIO2_1 |= 0x02;
+        	break;
+        }
+
+        case SSP_SCK1_PIN_3_2:
+        {
+            LPC_IOCON->PIO3_2 &= ~0x07;
+            LPC_IOCON->PIO3_2 |= 0x03;
+        	break;
+        }
+
+        case SSP_SSEL1_PIN_2_0:
+        {
+            LPC_IOCON->PIO2_0 &= ~0x07;
+            LPC_IOCON->PIO2_0 |= 0x02;
+        	break;
+        }
+
+        case SSP_SSEL1_PIN_2_4:
+        {
+            LPC_IOCON->PIO2_4 &= ~0x07;
+            LPC_IOCON->PIO2_4 |= 0x02;
+        	break;
+        }
+
+        default:
+        	break;
+
+    }
+
+
+}
+
+
 void SSP_Init(SSP_Dev_t *SSP_Dev)
 {
 
 	uint32_t regVal = 0;
 	uint32_t regSRCVal = 0;
+
+
+	SSP_IO_Init(SSP_Dev->IO_pins.MOSI_pin);
+	SSP_IO_Init(SSP_Dev->IO_pins.MISO_pin);
+	SSP_IO_Init(SSP_Dev->IO_pins.SCK_pin);
+	SSP_IO_Init(SSP_Dev->IO_pins.SSEL_pin);
 
 	regVal |= SSP_Dev->DataSize | SSP_Dev->FrameFormat | SSP_Dev->CPOL | SSP_Dev->CPHA;
 	regSRCVal = GetSSPClockRate(SSP_Dev->ClockRateHz);

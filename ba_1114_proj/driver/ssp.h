@@ -161,6 +161,43 @@ extern void SSP_Receive( uint8_t portNum, uint8_t *buf, uint32_t Length );
  * Used only for configuration
  */
 
+
+/* IO pins */
+
+typedef enum
+{
+	SSP_NO_PIN = 0,
+
+	/* SSP0 */
+
+	SSP_MOSI0_PIN_0_9,
+
+	SSP_MISO0_PIN_0_8,
+
+	SSP_SCK0_PIN_0_6,
+	SSP_SCK0_PIN_0_10,
+	SSP_SCK0_PIN_2_11,
+
+	SSP_SSEL0_PIN_0_2,
+
+	/* SSP1 */
+
+	SSP_MOSI1_PIN_2_3,
+	SSP_MOSI1_PIN_1_9,
+
+	SSP_MISO1_PIN_2_2,
+	SSP_MISO1_PIN_1_10,
+
+	SSP_SCK1_PIN_2_1,
+	SSP_SCK1_PIN_3_2,
+
+	SSP_SSEL1_PIN_2_0,
+	SSP_SSEL1_PIN_2_4
+
+} SSP_IO_pins_t;
+
+
+
 /* Frame format */
 #define SSP_FRAME_SPI          0x00000000
 #define SSP_FRAME_TI           0x00000010    /* Not supported */
@@ -250,6 +287,14 @@ typedef enum {
 #define BITMASK_CHECK(x,y) ((x) & (y))
 
 
+typedef struct {
+
+	SSP_IO_pins_t MOSI_pin;
+	SSP_IO_pins_t MISO_pin;
+	SSP_IO_pins_t SCK_pin;
+	SSP_IO_pins_t SSEL_pin;
+
+} SSP_HW_IO_t;
 
 /* SPI configuration structure. See defines above */
 typedef struct {
@@ -266,6 +311,8 @@ typedef struct {
 	SSI_TransferType_t transferType;
 	uint32_t InterruptCondition;
 	void (*ISR_Processing)( void );
+
+	SSP_HW_IO_t IO_pins;
 
 } SSP_Dev_t;
 
