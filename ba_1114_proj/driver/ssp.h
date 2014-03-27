@@ -296,6 +296,10 @@ typedef struct {
 
 } SSP_HW_IO_t;
 
+
+// todo add clock dividers by hand, cpol, cpha better description
+// add any NULL to InterruptCondition field
+
 /* SPI configuration structure. See defines above */
 typedef struct {
 
