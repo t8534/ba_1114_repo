@@ -56,6 +56,8 @@ uint8_t MPL115A2Coeffs[12];				//Place to store equation coefficients
 										//These values are stored in registers 0x4..0xF of MPL115A.
 
 
+SSP_Dev_t SSP_Dev;
+
 
 //************************************************************************************************
 // Device dependent routines
@@ -66,7 +68,7 @@ void CSLow(void)
 {
     /* Set SPI0 SSEL pin to output low. */
     //todo is it not automatically set by SSP periph
-    GPIOSetValue(PORT2, 0, 0);
+//    GPIOSetValue(PORT2, 0, 0);
     return;
 }
 
@@ -75,19 +77,20 @@ void CSHi(void)
 {
     /* Set SPI0 SSEL pin to output high. */
     //todo is it not automatically set by SSP periph
-    GPIOSetValue(PORT2, 0, 1);
+//    GPIOSetValue(PORT2, 0, 1);
     return;
 }
 
 
 // SPI write and read
-uint8_t SPISend (uint8_t outb)
+uint8_t SPISend (uint8_t txVal)
 {
-    uint8_t res = 0;
+    uint8_t rxVal = 0;
 
-    res = SSPSendRecvByte(outb);
+    //res = SSPSendRecvByte(txVal);
+    SSP_WriteRead(&SSP_Dev, (uint16_t *)&txVal, (uint16_t *)&rxVal, 1);
 
-    return res;
+    return rxVal;
 }
 
 
@@ -131,8 +134,6 @@ void MPL115AIntitalize()
 #endif
 
 
-	SSP_Dev_t SSP_Dev;
-
 	SSP_Dev.Device = LPC_SSP1;
 	SSP_Dev.FrameFormat = SSP_FRAME_SPI;
 	SSP_Dev.DataSize = SSP_DATABITS_8;
@@ -140,11 +141,16 @@ void MPL115AIntitalize()
 	SSP_Dev.CPHA = ;
 	SSP_Dev.LoopBackMode = SSP_LOOPBACK_OFF;
 	SSP_Dev.Mode = SSP_MASTER_MODE;
-	SSP_Dev.ClockRateHz = ???;	/* Clock rate,in Hz, should not exceed TODO: (SPI peripheral clock)/8 */
+
+	SSP_Dev.SCR = ;              /* CR0->SerialClockRate */
+	SSP_Dev.CPSDVSR = ;          /* SSPxCPSR->CPSDVSR */
+	SSP_Dev.DIV = ;              /* SSPxCLKDIV->DIV */
+
 	SSP_Dev.SlaveOutputDisable;
 	SSP_Dev.transferType = SSP_TRANSFER_POLLING;
-	SSP_Dev.InterruptCondition = ???;
+	SSP_Dev.InterruptCondition = SSP_ISR_NOFLAG_SET;
 	SSP_Dev.ISR_Processing = NULL;
+	SSEL_Mode = SSP_SSEL_AUTO;
 	SSP_Dev.IO_pins.MOSI_pin =   ;
 	SSP_Dev.IO_pins.MISO_pin =   ;
 	SSP_Dev.IO_pins.SCK_pin =   ;

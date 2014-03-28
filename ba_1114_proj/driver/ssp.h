@@ -1,5 +1,6 @@
 /****************************************************************************
  *   $Id:: ssp.h 5796 2010-12-03 00:08:56Z nxp21346                         $
+
  *   Project: NXP LPC11xx SSP example
  *
  *   Description:
@@ -19,150 +20,24 @@
 ****************************************************************************/
 #ifndef __SSP_H__
 #define __SSP_H__
-#if CONFIG_ENABLE_DRIVER_SSP==1
 
-/* There are there modes in SSP: loopback, master or slave. */
-/* Here are the combination of all the tests. 
-
-(1) LOOPBACK test:		LOOPBACK_MODE=1, TX_RX_ONLY=0, USE_CS=1;
-(2) Serial EEPROM test:	LOOPBACK_MODE=0, TX_RX_ONLY=0, USE_CS=0; (default)
-(3) TX(Master) Only:	LOOPBACK_MODE=0, SSP_SLAVE=0, TX_RX_ONLY=1, USE_CS=1;
-(4) RX(Slave) Only:		LOOPBACK_MODE=0, SSP_SLAVE=1, TX_RX_ONLY=1, USE_CS=1 */
-
-
-/********* SPI0 specify section *********/
-
-#define SSP_LOOPBACK_MODE0  0		/* 1 is loopback, 0 is normal operation. */
-#define SSP_SLAVE0          0		/* 1 is SLAVE mode, 0 is master mode */
-#define SSP_TX_RX_ONLY0     1		/* 1 is TX or RX only depending on SSP_SLAVE
-								 * flag, 0 is either loopback mode or communicate
-								 * with a serial EEPROM.
-								 */
-
-/* If USE_CS is zero, set SSEL as GPIO that you have total control
- * of the sequence. When test serial SEEPROM(LOOPBACK_MODE=0, TX_RX_ONLY=0),
- * set USE_CS to 0. When LOOPBACK_MODE=1 or TX_RX_ONLY=1, set USE_CS to 1.
- */
-#define SSP_USE_CS0			1
-
-
-/********* SPI1 specify section *********/
-
-#define SSP_LOOPBACK_MODE1	0		/* 1 is loopback, 0 is normal operation. */
-#define SSP_SLAVE1		1		/* 1 is SLAVE mode, 0 is master mode */
-#define SSP_TX_RX_ONLY1		1		/* 1 is TX or RX only depending on SSP_SLAVE
-								 * flag, 0 is either loopback mode or communicate
-								 * with a serial EEPROM.
-								 */
-
-/* If USE_CS is zero, set SSEL as GPIO that you have total control
- * of the sequence. When test serial SEEPROM(LOOPBACK_MODE=0, TX_RX_ONLY=0),
- * set USE_CS to 0. When LOOPBACK_MODE=1 or TX_RX_ONLY=1, set USE_CS to 1.
- */
-#define SSP_USE_CS1			1
-
-
-
-
-#define SSP_DEBUG		0  // todo: move out, it not belongs to the driver
-
-/* SPI read and write buffer size */
-//#define SSP_BUFSIZE		16
-//#define SSP_BUFSIZE		256
-#define SSP_BUFSIZE		9
-
-#define SSP_FIFOSIZE		8
-
-#define SSP_DELAY_COUNT		10
-#define SSP_MAX_TIMEOUT		0xFF
-
-/* Port0.2 is the SSP select pin */
-#define SSP0_SEL        (0x1<<2)
-	
-/* SSP Status register */
-#define SSPSR_TFE       (0x1<<0)
-#define SSPSR_TNF       (0x1<<1) 
-#define SSPSR_RNE       (0x1<<2)
-#define SSPSR_RFF       (0x1<<3) 
-#define SSPSR_BSY       (0x1<<4)
-
-/* SSP CR0 register */
-#define SSPCR0_DSS      (0x1<<0)
-#define SSPCR0_FRF      (0x1<<4)
-#define SSPCR0_SPO      (0x1<<6)
-#define SSPCR0_SPH      (0x1<<7)
-#define SSPCR0_SCR      (0x1<<8)
-
-/* SSP CR1 register */
-#define SSPCR1_LBM      (0x1<<0)
-#define SSPCR1_SSE      (0x1<<1)
-#define SSPCR1_MS       (0x1<<2)
-#define SSPCR1_SOD      (0x1<<3)
-
-/* SSP Interrupt Mask Set/Clear register */
-#define SSPIMSC_RORIM   (0x1<<0)
-#define SSPIMSC_RTIM    (0x1<<1)
-#define SSPIMSC_RXIM    (0x1<<2)
-#define SSPIMSC_TXIM    (0x1<<3)
-
-/* SSP0 Interrupt Status register */
-#define SSPRIS_RORRIS   (0x1<<0)
-#define SSPRIS_RTRIS    (0x1<<1)
-#define SSPRIS_RXRIS    (0x1<<2)
-#define SSPRIS_TXRIS    (0x1<<3)
-
-/* SSP0 Masked Interrupt register */
-#define SSPMIS_RORMIS   (0x1<<0)
-#define SSPMIS_RTMIS    (0x1<<1)
-#define SSPMIS_RXMIS    (0x1<<2)
-#define SSPMIS_TXMIS    (0x1<<3)
-
-/* SSP0 Interrupt clear register */
-#define SSPICR_RORIC    (0x1<<0)
-#define SSPICR_RTIC     (0x1<<1)
-
-/* ATMEL SEEPROM command set */
-#define WREN		0x06		/* MSB A8 is set to 0, simplifying test */
-#define WRDI		0x04
-#define RDSR		0x05
-#define WRSR		0x01
-#define READ		0x03
-#define WRITE		0x02
-
-/* RDSR status bit definition */
-#define RDSR_RDY	0x01
-#define RDSR_WEN	0x02
-
-/* If RX_INTERRUPT is enabled, the SSP RX will be handled in the ISR
-SSPReceive() will not be needed. */
-extern void SSP0_IRQHandler (void);
-extern void SSP1_IRQHandler (void);
-extern void SSP_IOConfig( uint8_t portNum );
-extern void SSP_Init( uint8_t portNum );
-extern void SSP_Send( uint8_t portNum, uint8_t *Buf, uint32_t Length );
-extern void SSP_Receive( uint8_t portNum, uint8_t *buf, uint32_t Length );
-
-
-
-/***************************************************************************/
-/***************************************************************************/
-/***************************************************************************/
-
+// TODO
 //
 // 1.
-// Configure pins
+// Update comments
 //
-// 2.
-// Fill the table.
 //
-
 
 /********************** Configuration ******************************
  * Used only for configuration
  */
 
 
-/* IO pins */
+/* IO pins
+ *
+ * Please check are pin is available on uP model.
+ *
+ */
 
 typedef enum
 {
@@ -264,13 +139,11 @@ typedef enum {
 
 
 /* SSP Interrupt Condition */
-#define SSP_ISR_RORIM    ((uint32_t)(1U))
-#define SSP_ISR_RTIM     ((uint32_t)(1U<<1))
-#define SSP_ISR_RXIM     ((uint32_t)(1U<<2))
-#define SSP_ISR_RXIM     ((uint32_t)(1U<<3))
-
-
-
+#define SSP_ISR_NOFLAG_SET    ((uint32_t)(0U))
+#define SSP_ISR_RORIM         ((uint32_t)(1U))
+#define SSP_ISR_RTIM          ((uint32_t)(1U<<1))
+#define SSP_ISR_RXIM          ((uint32_t)(1U<<2))
+#define SSP_ISR_RXIM          ((uint32_t)(1U<<3))
 
 
 
@@ -287,6 +160,11 @@ typedef enum {
 #define BITMASK_CHECK(x,y) ((x) & (y))
 
 
+typedef enum {
+	SSP_SSEL_AUTO,
+	SSP_SSEL_GPIO,
+} SSP_SSEL_Mode_t;
+
 typedef struct {
 
 	SSP_IO_pins_t MOSI_pin;
@@ -298,9 +176,47 @@ typedef struct {
 
 
 // todo add clock dividers by hand, cpol, cpha better description
-// add any NULL to InterruptCondition field
 
-/* SPI configuration structure. See defines above */
+/* SPI configuration structure. See defines above
+ * If SSEL pin is not automatic, but configured as GPIO you have to
+ * initialize and control it on your side using:
+ *
+ * SSP_SSEL0_GPIO_Init()
+ * SSP_SSEL0_GPIO_High()
+ * SSP_SSEL0_GPIO_Low()
+ *
+ * SSP_SSEL1_GPIO_Init()
+ * SSP_SSEL1_GPIO_High()
+ * SSP_SSEL1_GPIO_Low()
+ *
+ *
+ *
+ * Clock Settings.
+ *
+ * CR0->SerialClockRate
+ *
+ * Serial Clock Rate. The number of prescaler output clocks per bit on the bus,
+ * minus one. Given that CPSDVSR is the prescale divider, and the APB clock
+ * PCLK clocks the prescaler, the bit frequency is PCLK / (CPSDVSR x [SCR+1]).
+ *
+ *
+ * SSP0CPSR->CPSDVSR
+ * SSP1CPSR->CPSDVSR
+ *
+ * This even value between 2 and 254, by which SPI_PCLK is divided to yield
+ * the prescaler output clock. Bit 0 always reads as 0.
+ *
+ *
+ * SSP0CLKDIV->DIV
+ * SSP1CLKDIV->DIV
+ *
+ * SPIx_PCLK clock divider values
+ * 0: Disable SPI0_PCLK.
+ * 1 - 255: Divide by 1 to 255
+ *
+ *
+ *
+ */
 typedef struct {
 
 	LPC_SSP_TypeDef *Device;  // LPC_SSP0 or LPC_SSP1
@@ -310,12 +226,17 @@ typedef struct {
 	uint32_t CPHA;
 	uint32_t LoopBackMode;
 	uint32_t Mode;
-	uint32_t ClockRateHz;	/* Clock rate,in Hz, should not exceed TODO: (SPI peripheral clock)/8 */
+
+	uint8_t SCR;              /* CR0->SerialClockRate */
+    uint8_t CPSDVSR;          /* SSPxCPSR->CPSDVSR */
+    uint8_t DIV               /* SSPxCLKDIV->DIV */
+
 	uint32_t SlaveOutputDisable;
 	SSI_TransferType_t transferType;
 	uint32_t InterruptCondition;
 	void (*ISR_Processing)( void );
 
+	SSP_SSEL_Mode_t SSEL_Mode;    /* SSEL pin automatic or controlled by user */
 	SSP_HW_IO_t IO_pins;
 
 } SSP_Dev_t;
@@ -326,10 +247,16 @@ void SSP_Init(SSP_Dev_t *SSP_Dev);
 void SSP_DeInit(SSP_Dev_t *SSP_Dev);
 void SSP_ConfigUpdate(SSP_Dev_t *SSP_Dev);
 
-void SSP_Send(SSP_Dev_t *SSP_Dev, uint8_t *buff, uint32_t len);
-int32_t SSP_RecvBlock(SSP_Dev_t *SSP_Dev, uint8_t *buff, uint32_t len);
-int32_t SSP_SendRecvBlock(SSP_Dev_t *SSP_Dev, uint8_t *txBuff, uint32_t txLen, uint8_t *rxBuff);
 bool_t SSP_LoopbackTest(SSP_Dev_t *SSP_Dev);
+void SSP_WriteRead(SSP_Dev_t *SSP_Dev, uint16_t *tx_buff, uint16_t *rx_buff, uint16_t len);
+
+void SSP_SSEL0_GPIO_Init(void);
+void SSP_SSEL0_GPIO_High(void);
+void SSP_SSEL0_GPIO_Low(void);
+void SSP_SSEL1_GPIO_Init(void);
+void SSP_SSEL1_GPIO_High(void);
+void SSP_SSEL1_GPIO_Low(void);
+
 
 
 #endif
