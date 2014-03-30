@@ -240,20 +240,20 @@ void SSP_SSEL1_GPIO_Init(void)
     /* Enable AHB clock to the GPIO domain. */
     LPC_SYSCON->SYSAHBCLKCTRL |= (1<<6);
 
-    LPC_IOCON->PIO2_4 &= ~0x07;
-    LPC_IOCON->PIO2_4 |= 0x00;   /* GPIO pin mode = 0x00 */
-    GPIOSetDir(PORT2, 4, 1);     /* Output */
-    GPIOSetValue(PORT2, 4, 1);   /* High */
+    LPC_IOCON->PIO2_0 &= ~0x07;
+    LPC_IOCON->PIO2_0 |= 0x00;   /* GPIO pin mode = 0x00 */
+    GPIOSetDir(PORT2, 0, 1);     /* Output */
+    GPIOSetValue(PORT2, 0, 1);   /* High */
 }
 
 void SSP_SSEL1_GPIO_High(void)
 {
-	GPIOSetValue(PORT2, 4, 1);
+	GPIOSetValue(PORT2, 0, 1);
 }
 
 void SSP_SSEL1_GPIO_Low(void)
 {
-	GPIOSetValue(PORT2, 4, 0);
+	GPIOSetValue(PORT2, 0, 0);
 }
 
 
@@ -289,8 +289,8 @@ void SSP_IO_Init(SSP_IO_pins_t pin)
         {
         	LPC_IOCON->SCK_LOC &= ~0x03;
         	LPC_IOCON->SCK_LOC |= 0x00;
-            LPC_IOCON->PIO0_10 &= ~0x07;
-            LPC_IOCON->PIO0_10 |= 0x02;
+//todo            LPC_IOCON->PIO0_10 &= ~0x07;
+//todo            LPC_IOCON->PIO0_10 |= 0x02;
         	break;
         }
 
@@ -380,7 +380,7 @@ void SSP_Init(SSP_Dev_t *SSP_Dev)
 {
 
 	uint32_t regVal = 0;
-	uint32_t regSRCVal = 0;
+	uint8_t i = 0;
 
 
 	SSP_IO_Init(SSP_Dev->IO_pins.MOSI_pin);
@@ -390,9 +390,14 @@ void SSP_Init(SSP_Dev_t *SSP_Dev)
 	{
 	    SSP_IO_Init(SSP_Dev->IO_pins.SSEL_pin);
 	}
+	else
+	{
+		//todo make it general ssp0 and ssp1
+		SSP_SSEL1_GPIO_Init();
+	}
 
 	regVal |= SSP_Dev->DataSize | SSP_Dev->FrameFormat | SSP_Dev->CPOL | SSP_Dev->CPHA;
-	regVal |= ((uint32_t)(SSP_Dev->SRC << 8));
+	regVal |= ((uint32_t)(SSP_Dev->SCR << 8));
 	SSP_Dev->Device->CR0 = regVal;
 
 	regVal = 0;
@@ -402,7 +407,7 @@ void SSP_Init(SSP_Dev_t *SSP_Dev)
 
 	/* Set Interrupt Mask Register */
 	regVal = 0;
-	regval = SSP_Dev->InterruptCondition;
+	regVal = SSP_Dev->InterruptCondition;
 	SSP_Dev->Device->IMSC;
 
     if (SSP_Dev->Device == LPC_SSP0)
@@ -497,15 +502,16 @@ boolean_t SSP_LoopbackTest(SSP_Dev_t *SSP_Dev)
 {
 	boolean_t res = TRUE;
     uint8_t buffLen = FIFOSIZE;
-	uint8_t txBuff[buffLen] = {1, 2, 3, 4, 5, 6, 7, 8};
-	uint8_t rxBuff[buffLen];
+	uint8_t txBuff[FIFOSIZE] = {1, 2, 3, 4, 5, 6, 7, 8};
+	uint8_t rxBuff[FIFOSIZE];
+	uint16_t i = 0;
 
 
     for (i = 0; i < buffLen; i++)
     {
         /* Move on only if NOT busy and TX FIFO not full. */
         while ( SSP_Dev->Device->SR & (SSPSR_TNF | SSPSR_BSY) );
-        SSP_Dev->Device->SR = txBuff[i];
+        SSP_Dev->Device->DR = txBuff[i];
     }
 
 	// wait until SSP not busy
@@ -523,7 +529,7 @@ boolean_t SSP_LoopbackTest(SSP_Dev_t *SSP_Dev)
     	// Read Rx FIFO if not empty.
         while ( SSP_Dev->Device->SR & SSPSR_RNE )
         {
-        	rxBuff[i] = SSP_Dev->Device->SR;
+        	rxBuff[i] = SSP_Dev->Device->DR;
         }
     }
 
@@ -545,7 +551,8 @@ boolean_t SSP_LoopbackTest(SSP_Dev_t *SSP_Dev)
 void SSP_WriteRead(SSP_Dev_t *SSP_Dev, uint16_t *tx_buff, uint16_t *rx_buff, uint16_t len)
 {
 	uint16_t t_idx = 0;
-	uint32_t tmp = 0;
+	uint16_t tmp = 0;
+
 
 	uint16_t *tx_buff_ptr = tx_buff;
 	uint16_t *rx_buff_ptr = rx_buff;
@@ -563,9 +570,9 @@ void SSP_WriteRead(SSP_Dev_t *SSP_Dev, uint16_t *tx_buff, uint16_t *rx_buff, uin
 	{
 		t_idx = 0;
 
-		while (len > 0 && t_idx < FIFO_SIZE)
+		while (len > 0 && t_idx < FIFOSIZE)
 		{
-            SSP_Dev->Device->SR = tx_buff++;
+            SSP_Dev->Device->DR = *tx_buff_ptr++;
             t_idx++;
             len--;
 		}
@@ -577,7 +584,7 @@ void SSP_WriteRead(SSP_Dev_t *SSP_Dev, uint16_t *tx_buff, uint16_t *rx_buff, uin
 		{
 			// wait until rx_fifo not empty
 			while ( (LPC_SSP1->SR & SSPSR_RNE) != SSPSR_RNE );
-			rx_buff++ = SSP_Dev->Device->SR;
+			*rx_buff_ptr++ = SSP_Dev->Device->DR;
             t_idx--;
 		}
 

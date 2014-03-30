@@ -190,8 +190,8 @@ boolean_t SPITESTS_LoopbackInternalTest(uint8_t portNum)
     //todo
     // why USE_CS, FIFOSIZE, BUFFSIZE, what about IRS
 
-    SSP_IOConfig(portNum);
-    SSP_Init(portNum);
+//todo    SSP_IOConfig(portNum);
+//todo    SSP_Init(portNum);
     for (i = 0; i < SSP_BUFSIZE; i++)
     {
   	    src_addr[i] = (uint8_t)i;
@@ -222,12 +222,12 @@ boolean_t SPITESTS_LoopbackInternalTest(uint8_t portNum)
   	    /* to check the RXIM and TXIM interrupt, I send a block data at
   	     * one time based on the FIFOSIZE(8).
   	     */
-        SSP_Send( portNum, (uint8_t *)&src_addr[i], SSP_FIFOSIZE );
+ //todo       SSP_Send( portNum, (uint8_t *)&src_addr[i], SSP_FIFOSIZE );
 
   	    /* If RX interrupt is enabled, below receive routine can be
   	     * also handled inside the ISR.
   	     */
-  	    SSP_Receive( portNum, (uint8_t *)&dest_addr[i], SSP_FIFOSIZE );
+//todo  	    SSP_Receive( portNum, (uint8_t *)&dest_addr[i], SSP_FIFOSIZE );
 
   	    i += SSP_FIFOSIZE;
     }
@@ -312,11 +312,11 @@ boolean_t SPITESTS_LoopbackHardwarePoolingTest(void)
 	boolean_t res = TRUE;
     uint8_t i = 0;
 
-    SSP_IOConfig(SPI0);
-    SSP_Init(SPI0);
+//todo    SSP_IOConfig(SPI0);
+//todo    SSP_Init(SPI0);
 
-    SSP_IOConfig(SPI1);
-    SSP_Init(SPI1);
+//todo    SSP_IOConfig(SPI1);
+//todo    SSP_Init(SPI1);
 
     for (i = 0; i < SSP_FIFOSIZE; i++)
     {
@@ -324,8 +324,8 @@ boolean_t SPITESTS_LoopbackHardwarePoolingTest(void)
   	    dest_addr[i] = 0;
     }
 
-    SSP_Send(SPI0, (uint8_t *)src_addr, SSP_FIFOSIZE);
-    SSP_Receive(SPI1, (uint8_t *)dest_addr, SSP_FIFOSIZE);
+//todo    SSP_Send(SPI0, (uint8_t *)src_addr, SSP_FIFOSIZE);
+//todo    SSP_Receive(SPI1, (uint8_t *)dest_addr, SSP_FIFOSIZE);
 
     for (i = 0; i < SSP_FIFOSIZE; i++)
     {
@@ -386,11 +386,11 @@ boolean_t SPITESTS_LoopbackHardwareISPTest(void)
 	boolean_t res = TRUE;
     uint16_t i = 0;
 
-    SSP_IOConfig(SPI0);
-    SSP_Init(SPI0);
+//todo    SSP_IOConfig(SPI0);
+//todo    SSP_Init(SPI0);
 
-    SSP_IOConfig(SPI1);
-    SSP_Init(SPI1);
+//todo    SSP_IOConfig(SPI1);
+//todo    SSP_Init(SPI1);
 
     for (i = 0; i < SSP_BUFSIZE; i++)
     {
@@ -400,7 +400,7 @@ boolean_t SPITESTS_LoopbackHardwareISPTest(void)
     pseudo_mutex = 0;
     buffIdx = 0;
 
-    SSP_Send(SPI0, (uint8_t *)src_addr, SSP_BUFSIZE);
+//todo    SSP_Send(SPI0, (uint8_t *)src_addr, SSP_BUFSIZE);
 
     // Wait until all data are received by SPI1 ISR
     //while (0 == pseudo_mutex) {};

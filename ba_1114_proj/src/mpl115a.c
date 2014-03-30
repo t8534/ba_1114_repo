@@ -66,18 +66,18 @@ SSP_Dev_t SSP_Dev;
 // This is only  SSP0 !
 void CSLow(void)
 {
-    /* Set SPI0 SSEL pin to output low. */
+    /* Set SPI1 SSEL pin to output low. */
     //todo is it not automatically set by SSP periph
-//    GPIOSetValue(PORT2, 0, 0);
+    GPIOSetValue(PORT2, 0, 0);
     return;
 }
 
 
 void CSHi(void)
 {
-    /* Set SPI0 SSEL pin to output high. */
+    /* Set SPI1 SSEL pin to output high. */
     //todo is it not automatically set by SSP periph
-//    GPIOSetValue(PORT2, 0, 1);
+    GPIOSetValue(PORT2, 0, 1);
     return;
 }
 
@@ -137,24 +137,24 @@ void MPL115AIntitalize()
 	SSP_Dev.Device = LPC_SSP1;
 	SSP_Dev.FrameFormat = SSP_FRAME_SPI;
 	SSP_Dev.DataSize = SSP_DATABITS_8;
-	SSP_Dev.CPOL = ;
-	SSP_Dev.CPHA = ;
+	SSP_Dev.CPOL = SSP_SPI_CPOL_LO;
+	SSP_Dev.CPHA = SSP_SPI_CPHA_FIRST;
 	SSP_Dev.LoopBackMode = SSP_LOOPBACK_OFF;
 	SSP_Dev.Mode = SSP_MASTER_MODE;
 
-	SSP_Dev.SCR = ;              /* CR0->SerialClockRate */
-	SSP_Dev.CPSDVSR = ;          /* SSPxCPSR->CPSDVSR */
-	SSP_Dev.DIV = ;              /* SSPxCLKDIV->DIV */
+	SSP_Dev.SCR = 0x15;              /* CR0->SerialClockRate */
+	SSP_Dev.CPSDVSR = 0x02;          /* SSPxCPSR->CPSDVSR */
+	SSP_Dev.DIV = 0x02;              /* SSPxCLKDIV->DIV */
 
-	SSP_Dev.SlaveOutputDisable;
+	SSP_Dev.SlaveOutputDisable = ???;
 	SSP_Dev.transferType = SSP_TRANSFER_POLLING;
 	SSP_Dev.InterruptCondition = SSP_ISR_NOFLAG_SET;
 	SSP_Dev.ISR_Processing = NULL;
-	SSEL_Mode = SSP_SSEL_AUTO;
-	SSP_Dev.IO_pins.MOSI_pin =   ;
-	SSP_Dev.IO_pins.MISO_pin =   ;
-	SSP_Dev.IO_pins.SCK_pin =   ;
-	SSP_Dev.IO_pins.SSEL_pin =   ;
+	SSP_Dev.SSEL_Mode = SSP_SSEL_GPIO;
+	SSP_Dev.IO_pins.MOSI_pin = SSP_MOSI1_PIN_2_3;
+	SSP_Dev.IO_pins.MISO_pin = SSP_MISO1_PIN_2_2;
+	SSP_Dev.IO_pins.SCK_pin = SSP_SCK1_PIN_2_1;
+	SSP_Dev.IO_pins.SSEL_pin = SSP_NO_PIN;
 
 	SSP_Init(&SSP_Dev);
 
