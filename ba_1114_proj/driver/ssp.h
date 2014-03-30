@@ -143,7 +143,7 @@ typedef enum {
 #define SSP_ISR_RORIM         ((uint32_t)(1U))
 #define SSP_ISR_RTIM          ((uint32_t)(1U<<1))
 #define SSP_ISR_RXIM          ((uint32_t)(1U<<2))
-#define SSP_ISR_RXIM          ((uint32_t)(1U<<3))
+#define SSP_ISR_TXIM          ((uint32_t)(1U<<3))
 
 
 
