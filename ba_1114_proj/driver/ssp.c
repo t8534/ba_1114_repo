@@ -493,9 +493,9 @@ void SSP_ConfigUpdate(SSP_Dev_t *SSP_Dev)
 
 
 
-bool_t SSP_LoopbackTest(SSP_Dev_t *SSP_Dev)
+boolean_t SSP_LoopbackTest(SSP_Dev_t *SSP_Dev)
 {
-    bool_t res = TRUE;
+	boolean_t res = TRUE;
     uint8_t buffLen = FIFOSIZE;
 	uint8_t txBuff[buffLen] = {1, 2, 3, 4, 5, 6, 7, 8};
 	uint8_t rxBuff[buffLen];

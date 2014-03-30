@@ -28,6 +28,8 @@
 //
 //
 
+#include "type.h"
+
 /********************** Configuration ******************************
  * Used only for configuration
  */
@@ -229,10 +231,10 @@ typedef struct {
 
 	uint8_t SCR;              /* CR0->SerialClockRate */
     uint8_t CPSDVSR;          /* SSPxCPSR->CPSDVSR */
-    uint8_t DIV               /* SSPxCLKDIV->DIV */
+    uint8_t DIV;              /* SSPxCLKDIV->DIV */
 
 	uint32_t SlaveOutputDisable;
-	SSI_TransferType_t transferType;
+	SSP_TransferType_t transferType;
 	uint32_t InterruptCondition;
 	void (*ISR_Processing)( void );
 
@@ -247,7 +249,7 @@ void SSP_Init(SSP_Dev_t *SSP_Dev);
 void SSP_DeInit(SSP_Dev_t *SSP_Dev);
 void SSP_ConfigUpdate(SSP_Dev_t *SSP_Dev);
 
-bool_t SSP_LoopbackTest(SSP_Dev_t *SSP_Dev);
+boolean_t SSP_LoopbackTest(SSP_Dev_t *SSP_Dev);
 void SSP_WriteRead(SSP_Dev_t *SSP_Dev, uint16_t *tx_buff, uint16_t *rx_buff, uint16_t len);
 
 void SSP_SSEL0_GPIO_Init(void);
@@ -257,9 +259,6 @@ void SSP_SSEL1_GPIO_Init(void);
 void SSP_SSEL1_GPIO_High(void);
 void SSP_SSEL1_GPIO_Low(void);
 
-
-
-#endif
 #endif  /* __SSP_H__ */
 /*****************************************************************************
 **                            End Of File

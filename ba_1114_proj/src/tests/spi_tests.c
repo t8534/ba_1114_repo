@@ -134,6 +134,8 @@
 #include "spi_tests.h"
 
 
+#define SSP_BUFSIZE    8
+#define SSP_FIFOSIZE    8
 
 static uint8_t src_addr[SSP_BUFSIZE];
 static uint8_t dest_addr[SSP_BUFSIZE];
