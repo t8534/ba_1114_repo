@@ -66,18 +66,14 @@ SSP_Dev_t SSP_Dev;
 // This is only  SSP0 !
 void CSLow(void)
 {
-    /* Set SPI1 SSEL pin to output low. */
-    //todo is it not automatically set by SSP periph
-    GPIOSetValue(PORT2, 0, 0);
+    SSP_SSEL1_GPIO_Low();
     return;
 }
 
 
 void CSHi(void)
 {
-    /* Set SPI1 SSEL pin to output high. */
-    //todo is it not automatically set by SSP periph
-    GPIOSetValue(PORT2, 0, 1);
+    SSP_SSEL1_GPIO_High();
     return;
 }
 
@@ -146,7 +142,7 @@ void MPL115AIntitalize()
 	SSP_Dev.CPSDVSR = 0x02;          /* SSPxCPSR->CPSDVSR */
 	SSP_Dev.DIV = 0x02;              /* SSPxCLKDIV->DIV */
 
-	SSP_Dev.SlaveOutputDisable = ???;
+	SSP_Dev.SlaveOutputDisable = SSP_SLAVE_OUTPUT_ENABLE;
 	SSP_Dev.transferType = SSP_TRANSFER_POLLING;
 	SSP_Dev.InterruptCondition = SSP_ISR_NOFLAG_SET;
 	SSP_Dev.ISR_Processing = NULL;
@@ -157,6 +153,7 @@ void MPL115AIntitalize()
 	SSP_Dev.IO_pins.SSEL_pin = SSP_NO_PIN;
 
 	SSP_Init(&SSP_Dev);
+	CSHi();
 
 }
 

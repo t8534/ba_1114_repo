@@ -392,8 +392,16 @@ void SSP_Init(SSP_Dev_t *SSP_Dev)
 	}
 	else
 	{
-		//todo make it general ssp0 and ssp1
-		SSP_SSEL1_GPIO_Init();
+		// SSEL is controlled by GPIO by the user.
+		if (SSP_Dev->Device == LPC_SSP0)
+		{
+			SSP_SSEL0_GPIO_Init();
+		}
+		else
+		{
+			SSP_SSEL1_GPIO_Init();
+
+		}
 	}
 
 	regVal |= SSP_Dev->DataSize | SSP_Dev->FrameFormat | SSP_Dev->CPOL | SSP_Dev->CPHA;
