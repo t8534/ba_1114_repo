@@ -145,6 +145,8 @@
 #include "ssp.h"
 #include "spi_tests.h"
 
+#include "hellombed.h"
+
 
 
 
@@ -180,16 +182,82 @@ int main (void)
     }
 #endif
 
-
+#if 0
     res = SPITESTS_LoopbackHardwareISPTest();
     if (FALSE == res)
     {
     	GPIOSetValue(LED_PORT, LED_BIT, LED_ON);
     }
-
+#endif
 
     //while (1) {};  // For tests, to wait until received timeout ISR will be generated.
 
+    // Display test
+
+    ST7565_init();
+    // draw "hello mbed"
+    ST7565_send_pic(pic_hellombed);
+    wait(5);
+    // draw rectangle around the screen
+    ST7565_line(0, 0, ST7565_width()-1, 0, 0xFFFFFF);
+    wait(2);
+    ST7565_line(ST7565_width()-1, 0, ST7565_width()-1, ST7565_height()-1, 0xFFFFFF);
+    wait(2);
+    ST7565_line(ST7565_width()-1, ST7565_height()-1, 0, ST7565_height()-1, 0xFFFFFF);
+    wait(2);
+    ST7565_line(0, ST7565_height()-1, 0, 0, 0xFFFFFF);
+    wait(5);
+
+    ST7565_clear_screen();
+
+
+    GPIOSetValue(LED_PORT, LED_BIT, LED_ON);
+
+/*
+    float rotx = 0, roty = 0, rotz = 0;
+
+    Timer timer;
+    timer.start();
+    int frameno = 0;
+    const int pollcount = 10;
+    // shift 1/4th of screen to the left
+    tf.position(-dog.width() / 4, 0, 0);
+    tf.colour(0xffffff);
+    // shift 1/4th of screen to the right
+    cube.position(+dog.width() / 4, 0, 0);
+    cube.colour(0xffffff);
+    while (1)
+    {
+        rotx += 0.1;
+        roty += 0.08;
+        rotz += 0.05;
+
+        // set rotation angles
+        tf.rotate(rotx, roty, rotz);
+        cube.rotate(rotx, roty, rotz);
+        // lock update
+        dog.beginupdate();
+            dog.clear_screen();
+            // render TieFighter
+            tf.render(g);
+            // and the cube
+            cube.render(g);
+        // unlock update (and draw framebuffer)
+        dog.endupdate();
+        if ( ++frameno == pollcount )
+        {
+            // output fps to serial
+            int end = timer.read_ms();
+            float fps = pollcount*1000.0/end;
+            printf("\r%d frames, %d ms, FPS: %f", pollcount, end, fps);
+            frameno = 0;
+            timer.reset();
+        }
+        //dog.fill(40, 40, 52, 52, 0x000000);
+    }
+*/
+
+    while (1) {}
 
     return 0;
 }

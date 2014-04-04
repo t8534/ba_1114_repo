@@ -1,9 +1,16 @@
-#include "DogLCD.h"
+#include "st7565.h"
+
+#define LCDWIDTH 128
+#define LCDHEIGHT 64
+#define LCDPAGES  (LCDHEIGHT+7)/8
 
 // macro to make sure x falls into range from low to high (inclusive)
 #define CLAMP(x, low, high) { if ( (x) < (low) ) x = (low); if ( (x) > (high) ) x = (high); } while (0);
 
-void DogLCD::_send_commands(const unsigned char* buf, size_t size)
+
+static unsigned char framebuffer[LCDWIDTH*LCDPAGES];
+
+static void send_commands(const unsigned char* buf, size_t size)
 {
     // for commands, A0 is low
     _spi.format(8,0);
@@ -15,7 +22,7 @@ void DogLCD::_send_commands(const unsigned char* buf, size_t size)
     _cs = 1;
 }
 
-void DogLCD::_send_data(const unsigned char* buf, size_t size)
+static void send_data(const unsigned char* buf, size_t size)
 {
     // for data, A0 is high
     _spi.format(8,0);
@@ -29,20 +36,23 @@ void DogLCD::_send_data(const unsigned char* buf, size_t size)
 }
 
 // set column and page number
-void DogLCD::_set_xy(int x, int y)
+static void set_xy(int x, int y)
 {
+    unsigned char cmd[3];
+
+
     //printf("_set_xy(%d,%d)\n", x, y);
     CLAMP(x, 0, LCDWIDTH-1);
     CLAMP(y, 0, LCDPAGES-1);
-    unsigned char cmd[3];
     cmd[0] = 0xB0 | (y&0xF);
     cmd[1] = 0x10 | (x&0xF);
     cmd[2] = (x>>4)&0xF;
-    _send_commands(cmd, 3);
+    send_commands(cmd, 3);
 }
 
+
 // initialize and turn on the display
-void DogLCD::init()
+void ST7565_init()
 {
     const unsigned char init_seq[] = {
         0x40,    //Display start line 0
@@ -69,55 +79,59 @@ void DogLCD::init()
     _reset = 1;
     //wait(5);
     //printf("Sending init commands\n");
-    _send_commands(init_seq, sizeof(init_seq));
+    send_commands(init_seq, sizeof(init_seq));
 }
 
-void DogLCD::send_pic(const unsigned char* data)
+void ST7565_send_pic(const unsigned char* data)
 {
+	int i = 0;
+
+
     //printf("Sending picture\n");
-    for (int i=0; i<LCDPAGES; i++)
+    for (int i = 0; i < LCDPAGES; i++)
     {
-        _set_xy(0, i);
-        _send_data(data + i*LCDWIDTH, LCDWIDTH);
+        set_xy(0, i);
+        send_data(data + i*LCDWIDTH, LCDWIDTH);
     }
 }
 
-void DogLCD::clear_screen()
+void ST7565_clear_screen()
 {
     //printf("Clear screen\n");
-    memset(_framebuffer, 0, sizeof(_framebuffer));
+    memset(framebuffer, 0, sizeof(framebuffer));
     if ( _updating == 0 )
     {
-        send_pic(_framebuffer);
+    	ST7565_send_pic(framebuffer);
     }
 }
 
-void DogLCD::all_on(bool on)
+void ST7565_all_on(bool on)
 {
     //printf("Sending all on %d\n", on);
     unsigned char cmd = 0xA4 | (on ? 1 : 0);
-    _send_commands(&cmd, 1);
+    send_commands(&cmd, 1);
 }
 
-void DogLCD::pixel(int x, int y, int colour)
+void ST7565_pixel(int x, int y, int colour)
 {
     CLAMP(x, 0, LCDWIDTH-1);
     CLAMP(y, 0, LCDHEIGHT-1);
     int page = y / 8;
     unsigned char mask = 1<<(y%8);
     unsigned char *byte = &_framebuffer[page*LCDWIDTH + x];
+
     if ( colour == 0 )
         *byte &= ~mask; // clear pixel
     else
         *byte |= mask; // set pixel
     if ( !_updating )
     {
-        _set_xy(x, page);
-        _send_data(byte, 1);
+        set_xy(x, page);
+        send_data(byte, 1);
     }
 }
 
-void DogLCD::fill(int x, int y, int width, int height, int colour)
+void ST7565_fill(int x, int y, int width, int height, int colour)
 {
     /*
       If we need to fill partial pages at the top:
@@ -141,12 +155,14 @@ void DogLCD::fill(int x, int y, int width, int height, int colour)
     int page = y/8;
     int firstpage = page;
     int partpage = y%8;
-    if ( partpage != 0 )
+    int i = 0;
+
+    if (partpage != 0)
     {
         // we need to process partial bytes in the top page
-        unsigned char mask = (1<<partpage) - 1; // this mask has 1s for bits we need to leave
-        unsigned char *bytes = &_framebuffer[page*LCDWIDTH + x];
-        for ( int i = 0; i < width; i++, bytes++ )
+        unsigned char mask = (1 << partpage) - 1; // this mask has 1s for bits we need to leave
+        unsigned char *bytes = &framebuffer[page*LCDWIDTH + x];
+        for (i = 0; i < width; i++, bytes++)
         {
           // clear "our" bits
           *bytes &= mask;
@@ -156,17 +172,17 @@ void DogLCD::fill(int x, int y, int width, int height, int colour)
         height -= partpage;
         page++;
     }
-    while ( height >= 8 )
+    while (height >= 8)
     {
-        memset(&_framebuffer[page*LCDWIDTH + x], colour == 0 ? 0 : 0xFF, width);
+        memset(&framebuffer[page*LCDWIDTH + x], colour == 0 ? 0 : 0xFF, width);
         page++;
         height -= 8;
     }
-    if ( height != 0 )
+    if (height != 0)
     {
         // we need to process partial bytes in the bottom page
         unsigned char mask = ~((1<<partpage) - 1); // this mask has 1s for bits we need to leave
-        unsigned char *bytes = &_framebuffer[page*LCDWIDTH + x];
+        unsigned char *bytes = &framebuffer[page*LCDWIDTH + x];
         for ( int i = 0; i < width; i++, bytes++ )
         {
           // clear "our" bits
@@ -183,25 +199,25 @@ void DogLCD::fill(int x, int y, int width, int height, int colour)
         for ( page = firstpage; page < laststpage; page++)
         {
             //printf("setting x=%d, page=%d\n", x, page);
-            _set_xy(x, page);
+            set_xy(x, page);
             //printf("sending %d bytes at offset %x\n", width, page*LCDWIDTH + x);
-            _send_data(&_framebuffer[page*LCDWIDTH + x], width);
+            send_data(&framebuffer[page*LCDWIDTH + x], width);
         }
     }
 }
 
-void DogLCD::beginupdate()
+void ST7565_beginupdate()
 {
     _updating++;
     //printf("beginupdate: %d\n", _updating);
 }
 
-void DogLCD::endupdate()
+void ST7565_endupdate()
 {
     _updating--;
     //printf("endupdate: %d\n", _updating);
     if ( _updating == 0 )
     {
-        send_pic(_framebuffer);
+    	ST7565_send_pic(framebuffer);
     }
 }
