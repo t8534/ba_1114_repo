@@ -145,7 +145,9 @@
 #include "ssp.h"
 #include "spi_tests.h"
 
+#include "st7565.h"
 #include "hellombed.h"
+
 
 
 
