@@ -148,7 +148,7 @@ void SPITESTS_SPI1DataProcessingISP(uint8_t val)
 {
     if (buffIdx < SSP_BUFSIZE)
     {
-    	dest_addr[buffIdx++] = val;
+    	rxBuff[buffIdx++] = val;
     }
     else
     {
@@ -215,12 +215,14 @@ boolean_t SPITESTS_LoopbackInternalTest(SSP_Dev_t *dev)
     	rxBuff[i] = 0;
     }
 
+
+
+
    	SSP_WriteRead(dev, (uint16_t *)txBuff, (uint16_t *)rxBuff, SSP_BUFSIZE);
 
-   	i = SSP_BUFSIZE;
-   	while (i--)
+    for (i = 0; i < SSP_BUFSIZE; i++)
     {
-        if (*txBuff++ != *rxBuff++)
+        if (txBuff[i] != rxBuff[i])
         {
             res = FALSE;
             break;

@@ -172,20 +172,6 @@ int main (void)
 #endif
 
 
-#if 0
-    res = SPITESTS_LoopbackHardwarePoolingTest();
-    if (FALSE == res)
-    {
-    	GPIOSetValue(LED_PORT, LED_BIT, LED_ON);
-    }
-#endif
-
-
-    res = SPITESTS_LoopbackHardwareISPTest();
-    if (FALSE == res)
-    {
-    	GPIOSetValue(LED_PORT, LED_BIT, LED_ON);
-    }
 
 
     //while (1) {};  // For tests, to wait until received timeout ISR will be generated.
