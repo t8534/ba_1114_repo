@@ -156,6 +156,8 @@ int main (void)
 	boolean_t res = FALSE;
     uint16_t i = 0;
     uint16_t k = 0;
+	double pressure;
+
 
     SystemInit();
     /* LED test output*/
