@@ -144,7 +144,7 @@
 #include "gpio.h"
 #include "ssp.h"
 #include "spi_tests.h"
-
+#include "mpl115a.h"
 
 
 
@@ -154,7 +154,8 @@
 int main (void)
 {
 	boolean_t res = FALSE;
-
+    uint16_t i = 0;
+    uint16_t k = 0;
 
     SystemInit();
     /* LED test output*/
@@ -172,6 +173,23 @@ int main (void)
 #endif
 
 
+    MPL115AIntitalize();
+    MPL115AReadCoeffs();
+
+    GPIOSetValue(LED_PORT, LED_BIT, LED_ON);
+
+
+    // delay
+    for (i = 0; i < 500000; i++)
+    {
+        k += 1;
+    }
+
+
+    MPL115AReadPressureAndTempADC();
+    MPL115ACalculatePressure(&pressure);
+
+    while (1) {}
 
 
     //while (1) {};  // For tests, to wait until received timeout ISR will be generated.
