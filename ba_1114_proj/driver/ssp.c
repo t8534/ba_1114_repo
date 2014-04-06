@@ -578,13 +578,14 @@ void SSP_WriteRead(SSP_Dev_t *SSP_Dev, uint16_t *tx_buff, uint16_t *rx_buff, uin
 	uint16_t t_idx = 0;
 	uint16_t tmp = 0;
 
+	//debug
+	uint16_t debug = 0;
 
 	uint16_t *tx_buff_ptr = tx_buff;
 	uint16_t *rx_buff_ptr = rx_buff;
 
 	// Wait until Tx FIFO empty and SSP not busy.
-	//debug SR=3 halt here in infinity, bad condition below
-    while ( SSP_Dev->Device->SR & (SSPSR_TFE | SSPSR_BSY) );
+    while ( !(SSP_Dev->Device->SR & SSPSR_TFE) || (SSP_Dev->Device->SR & SSPSR_BSY) );
 
     // Read Rx FIFO until empty and wait until SSP not busy.
     while ( SSP_Dev->Device->SR & (SSPSR_RNE | SSPSR_BSY) )
@@ -600,7 +601,10 @@ void SSP_WriteRead(SSP_Dev_t *SSP_Dev, uint16_t *tx_buff, uint16_t *rx_buff, uin
 		while (len > 0 && t_idx < FIFOSIZE)
 		{
             //SSP_Dev->Device->DR = *tx_buff_ptr++;
-            LPC_SSP1->DR = *tx_buff_ptr++;
+			debug = *tx_buff_ptr;  //debug error
+            //LPC_SSP1->DR = tmp;
+            //tx_buff_ptr++;  // debug this is problem, out of range
+            //LPC_SSP1->DR = 0x0708;
 
             t_idx++;
             len--;
