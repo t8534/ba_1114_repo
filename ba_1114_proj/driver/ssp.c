@@ -571,7 +571,8 @@ void SSP_WriteRead(SSP_Dev_t *SSP_Dev, uint16_t *tx_buff, uint16_t *rx_buff, uin
     // Read Rx FIFO until empty and wait until SSP not busy.
     while ( SSP_Dev->Device->SR & (SSPSR_RNE | SSPSR_BSY) )
     {
-    	tmp = SSP_Dev->Device->SR;
+    	//todo tmp = SSP_Dev->Device->SR;
+    	tmp = LPC_SSP1->DR;
     }
 
 	while (len)
@@ -580,7 +581,9 @@ void SSP_WriteRead(SSP_Dev_t *SSP_Dev, uint16_t *tx_buff, uint16_t *rx_buff, uin
 
 		while (len > 0 && t_idx < FIFOSIZE)
 		{
-            SSP_Dev->Device->DR = *tx_buff_ptr++;
+            //SSP_Dev->Device->DR = *tx_buff_ptr++;
+            LPC_SSP1->DR = *tx_buff_ptr++;
+
             t_idx++;
             len--;
 		}

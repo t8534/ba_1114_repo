@@ -188,10 +188,10 @@ int main (void)
     }
 
 
-    MPL115AReadPressureAndTempADC();
-    MPL115ACalculatePressure(&pressure);
+//    MPL115AReadPressureAndTempADC();
+//    MPL115ACalculatePressure(&pressure);
 
-    while (1) {}
+//    while (1) {}
 
 
     //while (1) {};  // For tests, to wait until received timeout ISR will be generated.
