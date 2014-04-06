@@ -408,7 +408,7 @@ void SSP_Init(SSP_Dev_t *SSP_Dev)
 	regVal |= ((uint32_t)(SSP_Dev->SCR << 8));
 	//todo SSP_Dev->Device->CR0 = regVal;
 	//LPC_SSP1->CR0 = regVal;
-	LPC_SSP1->CPSR = 0x2;
+	LPC_SSP1->CR0 = 0x0707;
 
 	regVal = 0;
 	regVal |= SSP_Dev->LoopBackMode | SSP_Dev->Mode | SSP_Dev->SlaveOutputDisable;
