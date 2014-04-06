@@ -407,7 +407,8 @@ void SSP_Init(SSP_Dev_t *SSP_Dev)
 	regVal |= SSP_Dev->DataSize | SSP_Dev->FrameFormat | SSP_Dev->CPOL | SSP_Dev->CPHA;
 	regVal |= ((uint32_t)(SSP_Dev->SCR << 8));
 	//todo SSP_Dev->Device->CR0 = regVal;
-	LPC_SSP1->CR0 = regVal;
+	//LPC_SSP1->CR0 = regVal;
+	LPC_SSP1->CPSR = 0x2;
 
 	regVal = 0;
 	regVal |= SSP_Dev->LoopBackMode | SSP_Dev->Mode | SSP_Dev->SlaveOutputDisable;
