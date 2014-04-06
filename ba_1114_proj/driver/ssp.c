@@ -382,7 +382,7 @@ void SSP_Init(SSP_Dev_t *SSP_Dev)
 	uint32_t regVal = 0;
 	uint8_t i = 0;
 
-
+/*
 	SSP_IO_Init(SSP_Dev->IO_pins.MOSI_pin);
 	SSP_IO_Init(SSP_Dev->IO_pins.MISO_pin);
 	SSP_IO_Init(SSP_Dev->IO_pins.SCK_pin);
@@ -403,10 +403,11 @@ void SSP_Init(SSP_Dev_t *SSP_Dev)
 
 		}
 	}
-
+*/
 	regVal |= SSP_Dev->DataSize | SSP_Dev->FrameFormat | SSP_Dev->CPOL | SSP_Dev->CPHA;
 	regVal |= ((uint32_t)(SSP_Dev->SCR << 8));
-	SSP_Dev->Device->CR0 = regVal;
+	//todo SSP_Dev->Device->CR0 = regVal;
+	LPC_SSP1->CR0 = regVal;
 
 	regVal = 0;
 	regVal |= SSP_Dev->LoopBackMode | SSP_Dev->Mode | SSP_Dev->SlaveOutputDisable;
