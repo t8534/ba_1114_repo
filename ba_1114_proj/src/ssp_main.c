@@ -55,6 +55,29 @@
  * UART3-RX/I2C2-SCL - PIO0_4 - J6-41
  *
  *
+ * The clock settings:
+ * -------------------
+ *
+ * See p.22 UM10389 manual.
+ *
+ * XTAL = 12 MHz
+ *
+ * PLL is used. The sys_pllclkout = 48 MHz
+ * main clock = 48 MHz
+ *
+ * System Clock Divider = 1 ->  system clock = 48 MHz
+ *
+ *
+ * SSP0 peripherial clock divider = 2 -> SPI0 Peripherial Clock SPI0_PCLK = 24 MHz
+ * Following BitFreq  formula for SPI0:
+ *
+ * BitFreq = SPI0_PCLK / (CPSDVSR x (SCR + 1)) = SPI0_PCLK/16 = 24/16 = 1.5 Mbps
+ * CPSDVSR = 2
+ * SCR = 7
+ *
+ *
+ *
+ *
  * Additional notes:
  * =================
  *
@@ -137,6 +160,7 @@
  *
  */
 
+//#include <LPC11xx.h>
 
 #include "driver_config.h"
 #include "target_config.h"
@@ -154,9 +178,9 @@
 int main (void)
 {
 	boolean_t res = FALSE;
-    uint16_t i = 0;
-    uint16_t k = 0;
 	double pressure;
+	uint32_t i = 0;
+	uint32_t k = 0;
 
 
     SystemInit();
@@ -166,13 +190,7 @@ int main (void)
     //GPIOSetValue(LED_PORT, LED_BIT, LED_ON);
     GPIOSetValue(LED_PORT, LED_BIT, LED_OFF);
 
-#if 0
-    res = SPITESTS_LoopbackInternalTest(SPI1);
-    if (FALSE == res)
-    {
-    	GPIOSetValue(LED_PORT, LED_BIT, LED_ON);
-    }
-#endif
+
 
 
     MPL115AIntitalize();
@@ -188,14 +206,19 @@ int main (void)
     }
 
 
-//    MPL115AReadPressureAndTempADC();
-//    MPL115ACalculatePressure(&pressure);
+    MPL115AReadPressureAndTempADC();
+    MPL115ACalculatePressure(&pressure);
 
-//    while (1) {}
+    while (1) {}
 
-
-    //while (1) {};  // For tests, to wait until received timeout ISR will be generated.
-
+#if 0
+    while (1)
+    {
+        MPL115AReadPressureAndTempADC();
+        MPL115ACalculatePressure(&pressure);
+        //delay
+    };
+#endif
 
     return 0;
 }

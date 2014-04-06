@@ -382,7 +382,53 @@ void SSP_Init(SSP_Dev_t *SSP_Dev)
 	uint32_t regVal = 0;
 	uint8_t i = 0;
 
-/*
+
+	/* Before write to reg the clock must be enabled */
+    if (SSP_Dev->Device == LPC_SSP0)
+    {
+        /* Enable SSP0 clock */
+    	LPC_SYSCON->SYSAHBCLKCTRL |= ((uint32_t)(1<<11));
+
+        /* Set peripherial clock divider.
+    	 *
+    	 * 0: Disable SPI0_PCLK.
+  	     * 1 - 255: Divide by 1 - 255.
+  	     */
+        LPC_SYSCON->SSP0CLKDIV = SSP_Dev->DIV;
+
+        /* Reset SSP0
+         * Before accessing the SPI and I2C peripherals, write a one to this register to
+         * ensure that the reset signals to the SPI and I2C are de-asserted.
+         * */
+        LPC_SYSCON->PRESETCTRL &= ~((uint32_t)(1<<0));
+        LPC_SYSCON->PRESETCTRL |= ((uint32_t)(1<<0));
+
+    }
+    else  // LPC_SSP1
+    {
+
+        /* Enable SSP1 clock */
+    	LPC_SYSCON->SYSAHBCLKCTRL |= ((uint32_t)(1<<18));
+
+        /* Set peripherial clock divider.
+    	 *
+    	 * 0: Disable SPI1_PCLK.
+  	     * 1 - 255: Divide by 1 - 255.
+  	     */
+        LPC_SYSCON->SSP1CLKDIV = SSP_Dev->DIV;
+
+        /* Reset SSP1
+         * Before accessing the SPI and I2C peripherals, write a one to this register to
+         * ensure that the reset signals to the SPI and I2C are de-asserted.
+         */
+        LPC_SYSCON->PRESETCTRL &= ~((uint32_t)(1<<2));
+        LPC_SYSCON->PRESETCTRL |= ((uint32_t)(1<<2));
+
+    }
+
+
+
+
 	SSP_IO_Init(SSP_Dev->IO_pins.MOSI_pin);
 	SSP_IO_Init(SSP_Dev->IO_pins.MISO_pin);
 	SSP_IO_Init(SSP_Dev->IO_pins.SCK_pin);
@@ -403,12 +449,10 @@ void SSP_Init(SSP_Dev_t *SSP_Dev)
 
 		}
 	}
-*/
+
 	regVal |= SSP_Dev->DataSize | SSP_Dev->FrameFormat | SSP_Dev->CPOL | SSP_Dev->CPHA;
 	regVal |= ((uint32_t)(SSP_Dev->SCR << 8));
-	//todo SSP_Dev->Device->CR0 = regVal;
-	//LPC_SSP1->CR0 = regVal;
-	LPC_SSP1->CR0 = 0x0707;
+	SSP_Dev->Device->CR0 = regVal;
 
 	regVal = 0;
 	regVal |= SSP_Dev->LoopBackMode | SSP_Dev->Mode | SSP_Dev->SlaveOutputDisable;
@@ -422,40 +466,11 @@ void SSP_Init(SSP_Dev_t *SSP_Dev)
 
     if (SSP_Dev->Device == LPC_SSP0)
     {
-        /* Enable SSP0 clock */
-    	LPC_SYSCON->SYSAHBCLKCTRL |= ((uint32_t)(1<<11));
-
-        /* Set peripherial clock divider.
-    	 *
-    	 * 0: Disable SPI0_PCLK.
-  	     * 1 - 255: Divide by 1 - 255.
-  	     */
-        LPC_SYSCON->SSP0CLKDIV = SSP_Dev->DIV;
-
-        /* Reset SSP0 */
-        LPC_SYSCON->PRESETCTRL &= ~((uint32_t)(1<<0));
-
         NVIC_EnableIRQ(SSP0_IRQn);
-
     }
     else  // LPC_SSP1
     {
-
-        /* Enable SSP1 clock */
-    	LPC_SYSCON->SYSAHBCLKCTRL |= ((uint32_t)(1<<18));
-
-        /* Set peripherial clock divider.
-    	 *
-    	 * 0: Disable SPI1_PCLK.
-  	     * 1 - 255: Divide by 1 - 255.
-  	     */
-        LPC_SYSCON->SSP1CLKDIV = SSP_Dev->DIV;
-
-        /* Reset SSP1 */
-        LPC_SYSCON->PRESETCTRL &= ~((uint32_t)(1<<2));
-
         NVIC_EnableIRQ(SSP1_IRQn);
-
     }
 
 
@@ -568,6 +583,7 @@ void SSP_WriteRead(SSP_Dev_t *SSP_Dev, uint16_t *tx_buff, uint16_t *rx_buff, uin
 	uint16_t *rx_buff_ptr = rx_buff;
 
 	// Wait until Tx FIFO empty and SSP not busy.
+	//debug SR=3 halt here in infinity, bad condition below
     while ( SSP_Dev->Device->SR & (SSPSR_TFE | SSPSR_BSY) );
 
     // Read Rx FIFO until empty and wait until SSP not busy.
