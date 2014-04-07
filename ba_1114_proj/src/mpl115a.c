@@ -81,12 +81,13 @@ void CSHi(void)
 // SPI write and read
 uint8_t SPISend (uint8_t txVal)
 {
-    uint8_t rxVal = 0;
+    uint16_t rxVal16 = 0;
+    uint16_t txVal16 = txVal;
 
     //res = SSPSendRecvByte(txVal);
-    SSP_WriteRead(&SSP_Dev, (uint16_t *)&txVal, (uint16_t *)&rxVal, 1);
+    SSP_WriteRead(&SSP_Dev, &txVal16, &rxVal16, 1);
 
-    return rxVal;
+    return (uint8_t)rxVal16;
 }
 
 
