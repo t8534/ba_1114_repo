@@ -194,7 +194,7 @@ int main (void)
 
 
     MPL115AIntitalize();
-    MPL115AReadCoeffs();
+//    MPL115AReadCoeffs();
 
     GPIOSetValue(LED_PORT, LED_BIT, LED_ON);
 
@@ -206,8 +206,8 @@ int main (void)
     }
 
 
-    MPL115AReadPressureAndTempADC();
-    MPL115ACalculatePressure(&pressure);
+//    MPL115AReadPressureAndTempADC();
+//    MPL115ACalculatePressure(&pressure);
 
     while (1) {}
 

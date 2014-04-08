@@ -137,7 +137,8 @@ void MPL115AIntitalize()
 	SSP_Dev.DataSize = SSP_DATABITS_8;
 	SSP_Dev.CPOL = SSP_SPI_CPOL_LO;
 	SSP_Dev.CPHA = SSP_SPI_CPHA_FIRST;
-	SSP_Dev.LoopBackMode = SSP_LOOPBACK_OFF;
+	//SSP_Dev.LoopBackMode = SSP_LOOPBACK_OFF;
+	SSP_Dev.LoopBackMode = SSP_LOOPBACK_ON;
 	SSP_Dev.Mode = SSP_MASTER_MODE;
 
 	SSP_Dev.SCR = 0x15;              /* CR0->SerialClockRate */
@@ -156,6 +157,9 @@ void MPL115AIntitalize()
 
 	SSP_Init(&SSP_Dev);
 	CSHi();
+
+	//debug
+	SSP_LoopbackTest(&SSP_Dev);
 
 }
 
