@@ -123,8 +123,8 @@ typedef enum
 
 /* Master/Slave mode
  */
-#define SSP_SLAVE_MODE			((uint32_t)(0))
-#define SSP_MASTER_MODE			((uint32_t)(1U<<2))
+#define SSP_MASTER_MODE			((uint32_t)(0))
+#define SSP_SLAVE_MODE			((uint32_t)(1U<<2))
 
 
 /* Slave Output Disable

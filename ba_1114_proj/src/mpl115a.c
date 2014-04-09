@@ -137,11 +137,13 @@ void MPL115AIntitalize()
 	SSP_Dev.DataSize = SSP_DATABITS_8;
 	SSP_Dev.CPOL = SSP_SPI_CPOL_LO;
 	SSP_Dev.CPHA = SSP_SPI_CPHA_FIRST;
-	//SSP_Dev.LoopBackMode = SSP_LOOPBACK_OFF;
-	SSP_Dev.LoopBackMode = SSP_LOOPBACK_ON;
+	SSP_Dev.LoopBackMode = SSP_LOOPBACK_OFF;
+	//SSP_Dev.LoopBackMode = SSP_LOOPBACK_ON;
 	SSP_Dev.Mode = SSP_MASTER_MODE;
 
-	SSP_Dev.SCR = 0x15;              /* CR0->SerialClockRate */
+	//SSP_Dev.SCR = 0x15;              /* CR0->SerialClockRate */
+	SSP_Dev.SCR = 0x07;              /* CR0->SerialClockRate */
+
 	SSP_Dev.CPSDVSR = 0x02;          /* SSPxCPSR->CPSDVSR */
 	SSP_Dev.DIV = 0x02;              /* SSPxCLKDIV->DIV */
 
@@ -159,7 +161,7 @@ void MPL115AIntitalize()
 	CSHi();
 
 	//debug
-	SSP_LoopbackTest(&SSP_Dev);
+	//SSP_LoopbackTest(&SSP_Dev);
 
 }
 

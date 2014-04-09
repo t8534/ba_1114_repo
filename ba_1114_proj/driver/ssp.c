@@ -481,7 +481,7 @@ void SSP_Init(SSP_Dev_t *SSP_Dev)
     }
 
     /* Enable SSP */
-	SSP_Dev->Device->CR0 |= SSP_CTRL_ENABLE;
+	SSP_Dev->Device->CR1 |= SSP_CTRL_ENABLE;
 
 }
 
