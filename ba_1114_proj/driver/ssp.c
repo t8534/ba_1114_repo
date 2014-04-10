@@ -570,8 +570,6 @@ boolean_t SSP_LoopbackTest(SSP_Dev_t *SSP_Dev)
 }
 
 
-
-// todo: add timeout ?
 void SSP_WriteRead(SSP_Dev_t *SSP_Dev, uint16_t *tx_buff, uint16_t *rx_buff, uint16_t len)
 {
 	uint16_t t_idx = 0;
@@ -587,8 +585,7 @@ void SSP_WriteRead(SSP_Dev_t *SSP_Dev, uint16_t *tx_buff, uint16_t *rx_buff, uin
     /* Read Rx FIFO until empty and wait until SSP not busy. */
     while ( SSP_Dev->Device->SR & (SSPSR_RNE | SSPSR_BSY) )
     {
-    	//todo tmp = SSP_Dev->Device->SR;
-    	tmp = LPC_SSP1->DR;
+    	tmp = SSP_Dev->Device->DR;
     }
 
 	while (len)
@@ -597,10 +594,7 @@ void SSP_WriteRead(SSP_Dev_t *SSP_Dev, uint16_t *tx_buff, uint16_t *rx_buff, uin
 
 		while (len > 0 && t_idx < FIFOSIZE)
 		{
-            //SSP_Dev->Device->DR = *tx_buff_ptr++;
-			//todo replace back with Device
-            LPC_SSP1->DR = *tx_buff_ptr++;
-
+            SSP_Dev->Device->DR = *tx_buff_ptr++;
             t_idx++;
             len--;
 		}
@@ -611,7 +605,7 @@ void SSP_WriteRead(SSP_Dev_t *SSP_Dev, uint16_t *tx_buff, uint16_t *rx_buff, uin
 		while (t_idx)
 		{
 			/* wait until rx_fifo not empty */
-			while ( (LPC_SSP1->SR & SSPSR_RNE) != SSPSR_RNE );  //todo replace lpc_ssp1
+		    while ( (SSP_Dev->Device->SR & SSPSR_RNE) != SSPSR_RNE );
 			*rx_buff_ptr++ = SSP_Dev->Device->DR;
             t_idx--;
 		}

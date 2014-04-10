@@ -131,8 +131,8 @@ void MPL115AIntitalize()
 #endif
 
 
-	//SSP_Dev.Device = LPC_SSP1;  //todo replace finally after debug
-	SSP_Dev.Device = LPC_SSP1_BASE;
+	SSP_Dev.Device = LPC_SSP1;  //todo replace finally after debug
+	//SSP_Dev.Device = LPC_SSP1_BASE;
 	SSP_Dev.FrameFormat = SSP_FRAME_SPI;
 	SSP_Dev.DataSize = SSP_DATABITS_8;
 	SSP_Dev.CPOL = SSP_SPI_CPOL_LO;
