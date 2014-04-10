@@ -30,10 +30,6 @@
 
 #include "type.h"
 
-/********************** Configuration ******************************
- * Used only for configuration
- */
-
 
 /* IO pins
  *
@@ -43,6 +39,7 @@
 
 typedef enum
 {
+
 	SSP_NO_PIN = 0,
 
 	/* SSP0 */
@@ -148,24 +145,13 @@ typedef enum {
 #define SSP_ISR_TXIM          ((uint32_t)(1U<<3))
 
 
-
-/* a=target variable, b=bit number to act upon 0-n */
-#define BIT_SET(a,b) ((a) |= (1<<(b)))
-#define BIT_CLEAR(a,b) ((a) &= ~(1<<(b)))
-#define BIT_FLIP(a,b) ((a) ^= (1<<(b)))
-#define BIT_CHECK(a,b) ((a) & (1<<(b)))
-
-/* x=target variable, y=mask */
-#define BITMASK_SET(x,y) ((x) |= (y))
-#define BITMASK_CLEAR(x,y) ((x) &= (~(y)))
-#define BITMASK_FLIP(x,y) ((x) ^= (y))
-#define BITMASK_CHECK(x,y) ((x) & (y))
-
-
 typedef enum {
+
 	SSP_SSEL_AUTO,
 	SSP_SSEL_GPIO,
+
 } SSP_SSEL_Mode_t;
+
 
 typedef struct {
 
@@ -176,8 +162,6 @@ typedef struct {
 
 } SSP_HW_IO_t;
 
-
-// todo add clock dividers by hand, cpol, cpha better description
 
 /* SPI configuration structure. See defines above
  * If SSEL pin is not automatic, but configured as GPIO you have to
@@ -198,7 +182,7 @@ typedef struct {
  * CR0->SerialClockRate
  *
  * Serial Clock Rate. The number of prescaler output clocks per bit on the bus,
- * minus one. Given that CPSDVSR is the prescale divider, and the APB clock
+ * minus one. The CPSDVSR is the prescale divider, and the APB clock
  * PCLK clocks the prescaler, the bit frequency is PCLK / (CPSDVSR x [SCR+1]).
  *
  *
@@ -221,7 +205,7 @@ typedef struct {
  */
 typedef struct {
 
-	LPC_SSP_TypeDef *Device;  // LPC_SSP0 or LPC_SSP1
+	LPC_SSP_TypeDef *Device;  /* LPC_SSP0 or LPC_SSP1 */
     uint32_t FrameFormat;
 	uint32_t DataSize;
 	uint32_t CPOL;

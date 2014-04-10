@@ -156,32 +156,32 @@
 
 
 
-
 void SSP0_IRQHandler(void)
 {
     uint32_t regValue;
 
     regValue = LPC_SSP0->MIS;
-    if ( regValue & SSPMIS_RORMIS )	/* Receive overrun interrupt */
+    if ( regValue & SSPMIS_RORMIS )	    /* Receive overrun interrupt */
     {
 	    LPC_SSP0->ICR = SSPICR_RORIC;	/* clear interrupt */
     }
-    if ( regValue & SSPMIS_RTMIS )	/* Receive timeout interrupt */
+    if ( regValue & SSPMIS_RTMIS )	    /* Receive timeout interrupt */
     {
 	    LPC_SSP0->ICR = SSPICR_RTIC;	/* clear interrupt */
     }
 
     /* please be aware that, in main and ISR, CurrentRxIndex and CurrentTxIndex
-    are shared as global variables. It may create some race condition that main
-    and ISR manipulate these variables at the same time. SSPSR_BSY checking (polling)
-    in both main and ISR could prevent this kind of race condition */
+     * are shared as global variables. It may create some race condition that
+     * main and ISR manipulate these variables at the same time. SSPSR_BSY
+     * checking (polling) in both main and ISR could prevent this kind of race
+     * condition.
+     */
     if ( regValue & SSPMIS_RXMIS )	/* Rx at least half full */
     {
     }
 
     return;
 }
-
 
 
 void SSP1_IRQHandler(void)
@@ -189,19 +189,21 @@ void SSP1_IRQHandler(void)
     uint32_t regValue;
 
     regValue = LPC_SSP1->MIS;
-    if ( regValue & SSPMIS_RORMIS )	/* Receive overrun interrupt */
+    if ( regValue & SSPMIS_RORMIS )	    /* Receive overrun interrupt */
     {
 	    LPC_SSP1->ICR = SSPICR_RORIC;	/* clear interrupt */
     }
-    if ( regValue & SSPMIS_RTMIS )	/* Receive timeout interrupt */
+    if ( regValue & SSPMIS_RTMIS )	    /* Receive timeout interrupt */
     {
 	    LPC_SSP1->ICR = SSPICR_RTIC;	/* clear interrupt */
     }
 
     /* please be aware that, in main and ISR, CurrentRxIndex and CurrentTxIndex
-    are shared as global variables. It may create some race condition that main
-    and ISR manipulate these variables at the same time. SSPSR_BSY checking (polling)
-    in both main and ISR could prevent this kind of race condition */
+     * are shared as global variables. It may create some race condition that
+     * main and ISR manipulate these variables at the same time. SSPSR_BSY
+     * checking (polling) in both main and ISR could prevent this kind of race
+     * condition.
+     */
     if ( regValue & SSPMIS_RXMIS )	/* Rx at least half full */
     {
     }
@@ -211,8 +213,8 @@ void SSP1_IRQHandler(void)
 
 
 
-/* This is a set of function to define SSEL pins controlled
- * not automatically, but by hand.
+/* This is a set of function to define SSEL pins controlled not automatically,
+ * but by hand.
  */
 void SSP_SSEL0_GPIO_Init(void)
 {
@@ -372,7 +374,6 @@ void SSP_IO_Init(SSP_IO_pins_t pin)
 
     }
 
-
 }
 
 
@@ -397,14 +398,15 @@ void SSP_Init(SSP_Dev_t *SSP_Dev)
         LPC_SYSCON->SSP0CLKDIV = SSP_Dev->DIV;
 
         /* Reset SSP0
-         * Before accessing the SPI and I2C peripherals, write a one to this register to
-         * ensure that the reset signals to the SPI and I2C are de-asserted.
-         * */
+         * Before accessing the SPI and I2C peripherals, write a one to this
+         * register to ensure that the reset signals to the SPI and I2C are
+         * de-asserted.
+         */
         LPC_SYSCON->PRESETCTRL &= ~((uint32_t)(1<<0));
         LPC_SYSCON->PRESETCTRL |= ((uint32_t)(1<<0));
 
     }
-    else  // LPC_SSP1
+    else  /* LPC_SSP1 */
     {
 
         /* Enable SSP1 clock */
@@ -418,16 +420,14 @@ void SSP_Init(SSP_Dev_t *SSP_Dev)
         LPC_SYSCON->SSP1CLKDIV = SSP_Dev->DIV;
 
         /* Reset SSP1
-         * Before accessing the SPI and I2C peripherals, write a one to this register to
-         * ensure that the reset signals to the SPI and I2C are de-asserted.
+         * Before accessing the SPI and I2C peripherals, write a one to this
+         * register to ensure that the reset signals to the SPI and I2C are
+         * de-asserted.
          */
         LPC_SYSCON->PRESETCTRL &= ~((uint32_t)(1<<2));
         LPC_SYSCON->PRESETCTRL |= ((uint32_t)(1<<2));
 
     }
-
-
-
 
 	SSP_IO_Init(SSP_Dev->IO_pins.MOSI_pin);
 	SSP_IO_Init(SSP_Dev->IO_pins.MISO_pin);
@@ -438,7 +438,7 @@ void SSP_Init(SSP_Dev_t *SSP_Dev)
 	}
 	else
 	{
-		// SSEL is controlled by GPIO by the user.
+		/* SSEL is controlled by GPIO by the user. */
 		if (SSP_Dev->Device == LPC_SSP0)
 		{
 			SSP_SSEL0_GPIO_Init();
@@ -468,7 +468,7 @@ void SSP_Init(SSP_Dev_t *SSP_Dev)
     {
         NVIC_EnableIRQ(SSP0_IRQn);
     }
-    else  // LPC_SSP1
+    else  /* LPC_SSP1 */
     {
         NVIC_EnableIRQ(SSP1_IRQn);
     }
@@ -488,24 +488,24 @@ void SSP_Init(SSP_Dev_t *SSP_Dev)
 
 void SSP_DeInit(SSP_Dev_t *SSP_Dev)
 {
-    /* Disble SSP */
-	SSP_Dev->Device->CR0 &= SSP_CTRL_DISABLE;
+    /* Disable SSP */
+	SSP_Dev->Device->CR1 &= SSP_CTRL_DISABLE;
 
     if (SSP_Dev->Device == LPC_SSP0)
     {
         NVIC_DisableIRQ(SSP0_IRQn);
 
-        // Disable peripherial clock
+        /* Disable peripherial clock */
         LPC_SYSCON->SSP0CLKDIV = 0;
 
         /* Disable SSP0 clock */
         LPC_SYSCON->SYSAHBCLKCTRL &= ~((uint32_t)(1<<11));
     }
-    else  // SSP1
+    else  /* SSP1 */
     {
         NVIC_DisableIRQ(SSP1_IRQn);
 
-        // Disable peripherial clock
+        /* Disable peripherial clock */
         LPC_SYSCON->SSP1CLKDIV = 0;
 
         /* Disable SSP1 clock */
@@ -520,7 +520,6 @@ void SSP_ConfigUpdate(SSP_Dev_t *SSP_Dev)
 	SSP_DeInit(SSP_Dev);
 	SSP_Init(SSP_Dev);
 }
-
 
 
 boolean_t SSP_LoopbackTest(SSP_Dev_t *SSP_Dev)
@@ -544,14 +543,14 @@ boolean_t SSP_LoopbackTest(SSP_Dev_t *SSP_Dev)
 
     for (i = 0; i < buffLen; i++)
     {
-        /* As long as Receive FIFO is not empty, the frame can be always received.
-	     * If it's a loopback test, clock is shared for both TX and RX,
-	     * no need to write dummy byte to get clock to get the data
+        /* As long as Receive FIFO is not empty, the frame can be always
+         * received. If it's a loopback test, clock is shared for both
+         * TX and RX, no need to write dummy byte to get clock to get the data
 	     * if it's a peer-to-peer communication, SSPDR needs to be written
 	     * before a read can take place.
 	     */
 
-    	// Read Rx FIFO if not empty.
+    	/* Read Rx FIFO if not empty. */
         while ( SSP_Dev->Device->SR & SSPSR_RNE )
         {
         	rxBuff[i] = SSP_Dev->Device->DR;
@@ -572,22 +571,20 @@ boolean_t SSP_LoopbackTest(SSP_Dev_t *SSP_Dev)
 
 
 
-// todo: add timeout
+// todo: add timeout ?
 void SSP_WriteRead(SSP_Dev_t *SSP_Dev, uint16_t *tx_buff, uint16_t *rx_buff, uint16_t len)
 {
 	uint16_t t_idx = 0;
 	uint16_t tmp = 0;
 
-	//debug
-	uint16_t debug = 0;
 
 	uint16_t *tx_buff_ptr = tx_buff;
 	uint16_t *rx_buff_ptr = rx_buff;
 
-	// Wait until Tx FIFO empty and SSP not busy.
+	/* Wait until Tx FIFO empty and SSP not busy. */
     while ( !(SSP_Dev->Device->SR & SSPSR_TFE) || (SSP_Dev->Device->SR & SSPSR_BSY) );
 
-    // Read Rx FIFO until empty and wait until SSP not busy.
+    /* Read Rx FIFO until empty and wait until SSP not busy. */
     while ( SSP_Dev->Device->SR & (SSPSR_RNE | SSPSR_BSY) )
     {
     	//todo tmp = SSP_Dev->Device->SR;
@@ -601,21 +598,19 @@ void SSP_WriteRead(SSP_Dev_t *SSP_Dev, uint16_t *tx_buff, uint16_t *rx_buff, uin
 		while (len > 0 && t_idx < FIFOSIZE)
 		{
             //SSP_Dev->Device->DR = *tx_buff_ptr++;
-			//debug = *tx_buff_ptr;  //debug error
+			//todo replace back with Device
             LPC_SSP1->DR = *tx_buff_ptr++;
-            //tx_buff_ptr++;  // debug this is problem, out of range
-            //LPC_SSP1->DR = 0x0708;
 
             t_idx++;
             len--;
 		}
 
-		// wait until Tx FIFO will be completely sent (empty) and SSP not Busy
+		/* wait until Tx FIFO will be completely sent (empty) and SSP not Busy */
 		while ( !(SSP_Dev->Device->SR & SSPSR_TFE) || (SSP_Dev->Device->SR & SSPSR_BSY) );
 
 		while (t_idx)
 		{
-			// wait until rx_fifo not empty
+			/* wait until rx_fifo not empty */
 			while ( (LPC_SSP1->SR & SSPSR_RNE) != SSPSR_RNE );  //todo replace lpc_ssp1
 			*rx_buff_ptr++ = SSP_Dev->Device->DR;
             t_idx--;
