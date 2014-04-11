@@ -21,12 +21,6 @@
 #ifndef __SSP_H__
 #define __SSP_H__
 
-// TODO
-//
-// 1.
-// Update comments
-//
-//
 
 #include "type.h"
 

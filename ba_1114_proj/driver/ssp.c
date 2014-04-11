@@ -101,22 +101,6 @@
  *
  */
 
-
-// TODO
-//
-// 1.
-// Clock setting functions and matters.
-//
-// 2.
-// Enable/Disable SPI and loopback - via update function ?
-//
-// 3.
-// IRQ support using pointer to function and how to put flags into ?
-//
-
-
-
-
 #include "driver_config.h"
 #include "gpio.h"
 #include "ssp.h"
@@ -170,7 +154,7 @@ void SSP0_IRQHandler(void)
 	    LPC_SSP0->ICR = SSPICR_RTIC;	/* clear interrupt */
     }
 
-    /* please be aware that, in main and ISR, CurrentRxIndex and CurrentTxIndex
+    /* Please be aware, in main and ISR, CurrentRxIndex and CurrentTxIndex
      * are shared as global variables. It may create some race condition that
      * main and ISR manipulate these variables at the same time. SSPSR_BSY
      * checking (polling) in both main and ISR could prevent this kind of race
@@ -198,7 +182,7 @@ void SSP1_IRQHandler(void)
 	    LPC_SSP1->ICR = SSPICR_RTIC;	/* clear interrupt */
     }
 
-    /* please be aware that, in main and ISR, CurrentRxIndex and CurrentTxIndex
+    /* Please be aware that, in main and ISR, CurrentRxIndex and CurrentTxIndex
      * are shared as global variables. It may create some race condition that
      * main and ISR manipulate these variables at the same time. SSPSR_BSY
      * checking (polling) in both main and ISR could prevent this kind of race
@@ -278,6 +262,13 @@ void SSP_IO_Init(SSP_IO_pins_t pin)
         	break;
         }
 
+        /* The SCK0 function is multiplexed to three different pin locations
+         * (two locations on the HVQFN package). Use the IOCON_LOC register
+         * (see Section 7.4) to select a physical location for the SCK0
+         * function in addition to selecting the function in the IOCON
+         * registers. The SCK1 pin is not multiplexed.
+         */
+
         case SSP_SCK0_PIN_0_6:
         {
         	LPC_IOCON->SCK_LOC &= ~0x03;
@@ -291,8 +282,8 @@ void SSP_IO_Init(SSP_IO_pins_t pin)
         {
         	LPC_IOCON->SCK_LOC &= ~0x03;
         	LPC_IOCON->SCK_LOC |= 0x00;
-//todo            LPC_IOCON->PIO0_10 &= ~0x07;
-//todo            LPC_IOCON->PIO0_10 |= 0x02;
+        	LPC_IOCON->SWCLK_PIO0_10 &= ~0x03;
+        	LPC_IOCON->SWCLK_PIO0_10 |= 0x02;
         	break;
         }
 
@@ -570,6 +561,9 @@ boolean_t SSP_LoopbackTest(SSP_Dev_t *SSP_Dev)
 }
 
 
+/* tx_buff, rx_buff must be 16 bit !
+ *
+ */
 void SSP_WriteRead(SSP_Dev_t *SSP_Dev, uint16_t *tx_buff, uint16_t *rx_buff, uint16_t len)
 {
 	uint16_t t_idx = 0;

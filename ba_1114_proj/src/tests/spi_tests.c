@@ -1,8 +1,7 @@
 /*
  * spi_tests.c
-
  *
- * rev. 140111_0916
+ * rev. 140411_2301
  *
  *
  * Test conditions:
@@ -114,21 +113,15 @@
  * It seems to be FIFO at least full flag has highest priority.
  * Than Timeout flag, and Overrun in this case.
  *
- *
- * Changelog.
- * ==========
- *
- *
- *
- *
- * TODO:
- *
  */
 
 
-#include "driver_config.h"  //todo describe this include MUST BE, and if SSP driver will be not ON in there,
-                            // than all the ssp.h and .c file will be not add to compile, so during compilation
-                            // of this file, there will be error. This approach is very buggy.
+/* This include MUST BE, and if SSP driver will be not ON in there, than all
+ * the ssp.h and .c file will be not add to compile, so during compilation
+ * of this file, there will be error. This approach is very buggy.
+ */
+#include "driver_config.h"
+
 #include "gpio.h"
 #include "ssp.h"
 #include "spi_tests.h"
@@ -137,10 +130,10 @@
 #define SSP_BUFSIZE    8
 
 
-static uint8_t txBuff[SSP_BUFSIZE];
-static uint8_t rxBuff[SSP_BUFSIZE];
+static uint16_t txBuff[SSP_BUFSIZE];
+static uint16_t rxBuff[SSP_BUFSIZE];
 
-// Replace both with something better finally
+/* Replace both with something better finally */
 static uint8_t pseudo_mutex;
 static uint8_t buffIdx;
 
@@ -170,9 +163,9 @@ void SPITESTS_Init(void)
 	SPITESTS_Dev.LoopBackMode = SSP_LOOPBACK_ON;
 	SPITESTS_Dev.Mode = SSP_MASTER_MODE;
 
-	SPITESTS_Dev.SCR = 0x15;              /* CR0->SerialClockRate */
-	SPITESTS_Dev.CPSDVSR = 0x02;          /* SSPxCPSR->CPSDVSR */
-	SPITESTS_Dev.DIV = 0x02;              /* SSPxCLKDIV->DIV */
+	SPITESTS_Dev.SCR = 0x7;              /* CR0->SerialClockRate */
+	SPITESTS_Dev.CPSDVSR = 0x02;         /* SSPxCPSR->CPSDVSR */
+	SPITESTS_Dev.DIV = 0x02;             /* SSPxCLKDIV->DIV */
 
 	SPITESTS_Dev.SlaveOutputDisable = SSP_SLAVE_OUTPUT_ENABLE;
 	SPITESTS_Dev.transferType = SSP_TRANSFER_POLLING;
@@ -206,19 +199,13 @@ boolean_t SPITESTS_LoopbackInternalTest(SSP_Dev_t *dev)
     uint8_t i = 0;
 
 
-    //todo
-    // why USE_CS, FIFOSIZE, BUFFSIZE, what about IRS
-
     for (i = 0; i < SSP_BUFSIZE; i++)
     {
     	txBuff[i] = (uint8_t)i;
     	rxBuff[i] = 0;
     }
 
-
-
-
-   	SSP_WriteRead(dev, (uint16_t *)txBuff, (uint16_t *)rxBuff, SSP_BUFSIZE);
+    SSP_WriteRead(dev, txBuff, rxBuff, SSP_BUFSIZE);
 
     for (i = 0; i < SSP_BUFSIZE; i++)
     {

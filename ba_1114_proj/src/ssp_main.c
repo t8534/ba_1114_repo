@@ -192,37 +192,25 @@ int main (void)
 
 
 
-
+#if 1
     MPL115AIntitalize();
     MPL115AReadCoeffs();
-
     GPIOSetValue(LED_PORT, LED_BIT, LED_ON);
-
-
     // delay
     for (i = 0; i < 500000; i++)
     {
         k += 1;
     }
-
-
     MPL115AReadPressureAndTempADC();
 //    MPL115ACalculatePressure(&pressure);
-
     while (1) {}
-
-#if 0
-    while (1)
-    {
-        MPL115AReadPressureAndTempADC();
-        MPL115ACalculatePressure(&pressure);
-        //delay
-    };
 #endif
 
 
+
 #if 0
-    res = SPITESTS_LoopbackHardwareISPTest();
+    SPITESTS_Init();
+    res = SPITESTS_LoopbackInternalTest(&SPITESTS_Dev);
     if (FALSE == res)
     {
     	GPIOSetValue(LED_PORT, LED_BIT, LED_ON);
