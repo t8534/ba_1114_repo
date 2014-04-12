@@ -56,6 +56,8 @@ uint8_t MPL115A2Coeffs[12];				//Place to store equation coefficients
 										//These values are stored in registers 0x4..0xF of MPL115A.
 
 
+SSP_Dev_t SSP_Dev;
+
 
 //************************************************************************************************
 // Device dependent routines
@@ -64,30 +66,27 @@ uint8_t MPL115A2Coeffs[12];				//Place to store equation coefficients
 // This is only  SSP0 !
 void CSLow(void)
 {
-    /* Set SPI0 SSEL pin to output low. */
-    //todo is it not automatically set by SSP periph
-    GPIOSetValue(PORT2, 0, 0);
+    SSP_SSEL1_GPIO_Low();
     return;
 }
 
 
 void CSHi(void)
 {
-    /* Set SPI0 SSEL pin to output high. */
-    //todo is it not automatically set by SSP periph
-    GPIOSetValue(PORT2, 0, 1);
+    SSP_SSEL1_GPIO_High();
     return;
 }
 
 
 // SPI write and read
-uint8_t SPISend (uint8_t outb)
+uint8_t SPISend (uint8_t txVal)
 {
-    uint8_t res = 0;
+    uint16_t rxVal16 = 0;
+    uint16_t txVal16 = txVal;
 
-    res = SSPSendRecvByte(outb);
+    SSP_WriteRead(&SSP_Dev, &txVal16, &rxVal16, 1);
 
-    return res;
+    return (uint8_t)rxVal16;
 }
 
 
@@ -123,10 +122,39 @@ uint8_t MPL115ARead(uint8_t address)
 // Initialization of communication interface 
 void MPL115AIntitalize()
 {
+#if 0
 	CSHi();
     SSP_IOConfig(SPI1);
     SSP_Init(SPI1);
 	CSHi();  // todo which one ?
+#endif
+
+
+	SSP_Dev.Device = LPC_SSP1;
+	SSP_Dev.FrameFormat = SSP_FRAME_SPI;
+	SSP_Dev.DataSize = SSP_DATABITS_8;
+	SSP_Dev.CPOL = SSP_SPI_CPOL_LO;
+	SSP_Dev.CPHA = SSP_SPI_CPHA_FIRST;
+	SSP_Dev.LoopBackMode = SSP_LOOPBACK_OFF;
+	SSP_Dev.Mode = SSP_MASTER_MODE;
+
+	SSP_Dev.SCR = 0x07;              /* CR0->SerialClockRate */
+	SSP_Dev.CPSDVSR = 0x02;          /* SSPxCPSR->CPSDVSR */
+	SSP_Dev.DIV = 0x02;              /* SSPxCLKDIV->DIV */
+
+	SSP_Dev.SlaveOutputDisable = SSP_SLAVE_OUTPUT_ENABLE;
+	SSP_Dev.transferType = SSP_TRANSFER_POLLING;
+	SSP_Dev.InterruptCondition = SSP_ISR_NOFLAG_SET;
+	SSP_Dev.ISR_Processing = NULL;
+	SSP_Dev.SSEL_Mode = SSP_SSEL_GPIO;
+	SSP_Dev.IO_pins.MOSI_pin = SSP_MOSI1_PIN_2_3;
+	SSP_Dev.IO_pins.MISO_pin = SSP_MISO1_PIN_2_2;
+	SSP_Dev.IO_pins.SCK_pin = SSP_SCK1_PIN_2_1;
+	SSP_Dev.IO_pins.SSEL_pin = SSP_NO_PIN;
+
+	SSP_Init(&SSP_Dev);
+	CSHi();
+
 }
 
 // MPL115AReadPressureAndTempADC

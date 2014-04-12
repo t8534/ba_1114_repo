@@ -160,6 +160,7 @@
  *
  */
 
+//#include <LPC11xx.h>
 
 #include "driver_config.h"
 #include "target_config.h"
@@ -168,6 +169,7 @@
 #include "ssp.h"
 #include "spi_tests.h"
 #include "mpl115a.h"
+
 
 
 
@@ -190,32 +192,39 @@ int main (void)
     GPIOSetValue(LED_PORT, LED_BIT, LED_OFF);
 
 
+#if 1
     MPL115AIntitalize();
     MPL115AReadCoeffs();
-
     GPIOSetValue(LED_PORT, LED_BIT, LED_ON);
-
-
     // delay
     for (i = 0; i < 500000; i++)
     {
         k += 1;
     }
-
-
     MPL115AReadPressureAndTempADC();
-    MPL115ACalculatePressure(&pressure);
+//    MPL115ACalculatePressure(&pressure);
+    while (1) {}
+#endif
+
+  
+
+#if 0
+    SPITESTS_Init(&SPITESTS_Dev);
+    res = SPITESTS_LoopbackInternalTest(&SPITESTS_Dev);
+    if (FALSE == res)
+    {
+    	GPIOSetValue(LED_PORT, LED_BIT, LED_ON);
+    }
+#endif
+
+    //while (1) {};  // For tests, to wait until received timeout ISR will be generated.
+
+
+
+    GPIOSetValue(LED_PORT, LED_BIT, LED_ON);
 
     while (1) {}
 
-#if 0
-    while (1)
-    {
-        MPL115AReadPressureAndTempADC();
-        MPL115ACalculatePressure(&pressure);
-        //delay
-    };
-#endif
 
     return 0;
 }
