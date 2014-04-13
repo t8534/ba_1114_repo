@@ -195,7 +195,9 @@ int main (void)
     //GPIOSetValue(LED_PORT, LED_BIT, LED_ON);
     GPIOSetValue(LED_PORT, LED_BIT, LED_OFF);
 
-#if 1
+
+// Pressure sensor test
+#if 0
     MPL115AIntitalize();
     MPL115AReadCoeffs();
     GPIOSetValue(LED_PORT, LED_BIT, LED_ON);
@@ -210,6 +212,7 @@ int main (void)
 #endif
 
 
+// Loopback test
 #if 0
     SPITESTS_Init();
     res = SPITESTS_LoopbackInternalTest(&SPITESTS_Dev);

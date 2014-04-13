@@ -1,3 +1,30 @@
+/*
+ *
+ *   Pinout:
+ *
+ *   spi, pin_power, pin_cs, pin_a0, pin_reset
+ *
+ *
+ * The sensor MPL115a is connected by SPI1 on lpcexpresso 1114 board.
+ * SPI0 is shared with debugger pins.
+ *
+ * SPI                                         MPL115a Kamami
+ *
+ * SPI MOSI1 - PIO2_3  - PIO2_3 J6-45   -----  SDA/SDI (2)
+ * SPI MISO1 - PIO2_2  - PIO2_2 J6-14   -----  SDO     (4)
+ * SPI SCK1  - PIO2_1  - PIO2_1 J16-13  -----  SCL/CLK (5)
+ * SPI SSEL1 - PIO2_0  - PIO2_0 J6-12   -----  CS_RES  (2)
+ *
+ * IO_PIN                               -----  POWER_PIN
+ * IO_PIN                               -----  CS_PIN
+ * IO_PIN                               -----  A0_PIN
+ * IO_PIN                               -----  RESET_PIN
+ *
+ */
+
+
+
+
 #include "st7565.h"
 
 #define LCDWIDTH 128
@@ -9,6 +36,9 @@
 
 
 static unsigned char framebuffer[LCDWIDTH*LCDPAGES];
+static int _updating;
+static SSP_Dev_t SSP_Dev;
+
 
 static void send_commands(const unsigned char* buf, size_t size)
 {
@@ -51,6 +81,48 @@ static void set_xy(int x, int y)
 }
 
 
+static void ioInit(void)
+{
+
+
+
+
+
+
+
+
+}
+
+
+static void spiInit(void)
+{
+	SSP_Dev.Device = LPC_SSP1;
+	SSP_Dev.FrameFormat = SSP_FRAME_SPI;
+	SSP_Dev.DataSize = SSP_DATABITS_8;
+	SSP_Dev.CPOL = SSP_SPI_CPOL_LO;
+	SSP_Dev.CPHA = SSP_SPI_CPHA_FIRST;
+	SSP_Dev.LoopBackMode = SSP_LOOPBACK_OFF;
+	SSP_Dev.Mode = SSP_MASTER_MODE;
+
+	SSP_Dev.SCR = 0x07;              /* CR0->SerialClockRate */
+	SSP_Dev.CPSDVSR = 0x02;          /* SSPxCPSR->CPSDVSR */
+	SSP_Dev.DIV = 0x02;              /* SSPxCLKDIV->DIV */
+
+	SSP_Dev.SlaveOutputDisable = SSP_SLAVE_OUTPUT_ENABLE;
+	SSP_Dev.transferType = SSP_TRANSFER_POLLING;
+	SSP_Dev.InterruptCondition = SSP_ISR_NOFLAG_SET;
+	SSP_Dev.ISR_Processing = NULL;
+	SSP_Dev.SSEL_Mode = SSP_SSEL_GPIO;
+	SSP_Dev.IO_pins.MOSI_pin = SSP_MOSI1_PIN_2_3;
+	SSP_Dev.IO_pins.MISO_pin = SSP_MISO1_PIN_2_2;
+	SSP_Dev.IO_pins.SCK_pin = SSP_SCK1_PIN_2_1;
+	SSP_Dev.IO_pins.SSEL_pin = SSP_NO_PIN;
+
+	SSP_Init(&SSP_Dev);
+}
+
+
+
 // initialize and turn on the display
 void ST7565_init()
 {
@@ -70,6 +142,13 @@ void ST7565_init()
         0x00,
         0xaf,    //Display on
     };
+
+
+    ioInit();
+    spiInit();
+
+
+
     //printf("Reset=L\n");
     _reset = 0;
     //printf("Power=H\n");
@@ -81,6 +160,19 @@ void ST7565_init()
     //printf("Sending init commands\n");
     send_commands(init_seq, sizeof(init_seq));
 }
+
+
+int ST7565_getWidth(void)
+{
+    return LCDWIDTH;
+}
+
+
+int ST7565_getHeight(void)
+{
+    return LCDHEIGHT;
+}
+
 
 void ST7565_send_pic(const unsigned char* data)
 {
@@ -105,10 +197,10 @@ void ST7565_clear_screen()
     }
 }
 
-void ST7565_all_on(bool on)
+void ST7565_all_on(ST7565_PixelState_t state)
 {
     //printf("Sending all on %d\n", on);
-    unsigned char cmd = 0xA4 | (on ? 1 : 0);
+    unsigned char cmd = 0xA4 | (state ? 1 : 0);
     send_commands(&cmd, 1);
 }
 
