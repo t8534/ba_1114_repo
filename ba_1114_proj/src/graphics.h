@@ -53,7 +53,7 @@ void GRAPH_line(int x0, int y0, int x1, int y1, int colour);
  * z1 - Z co-ordinate of the end of the line.
  * colour - The colour of the line.
  */
-void GRAPH_line3d(int x0, int y0, int z0, int x1, int y1, int z0, int colour);
+void GRAPH_line3d(int x0, int y0, int z0, int x1, int y1, int z1, int colour);
         
 /* Function: circle
  * Draw a coloured circle.

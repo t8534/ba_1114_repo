@@ -23,6 +23,7 @@
 
 
 #include "type.h"
+#include "LPC11xx.h"
 
 
 /* IO pins

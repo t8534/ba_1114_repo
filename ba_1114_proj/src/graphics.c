@@ -21,6 +21,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
+#include <stdlib.h>
+#include "type.h"
 #include "st7565.h"
 #include "graphics.h"
 
@@ -31,7 +33,7 @@
 void GRAPH_line(int x0, int y0, int x1, int y1, int colour) {
     // Bresenham
     //printf("line(%d, %d, %d, %d, %d)\n", x0, y0, x1, y1, colour);
-    bool steep = abs(y1 - y0) > abs(x1 - x0);
+	boolean_t steep = abs(y1 - y0) > abs(x1 - x0);
     int temp, deltax, deltay, error, ystep, y, x;
     if (steep) {
         temp = y0;
@@ -90,7 +92,7 @@ void GRAPH_line3d(int x0, int y0, int z0, int x1, int y1, int z1, int colour) {
     int v0 = _cy3d + y0 * _cz3d / (z0 + _cz3d);
     int u1 = _cx3d + x1 * _cz3d / (z1 + _cz3d);
     int v1 = _cy3d + y1 * _cz3d / (z1 + _cz3d);
-    line(u0, v0, u1, v1, colour);
+    GRAPH_line(u0, v0, u1, v1, colour);
 }
 
 void GRAPH_circle(int cx, int cy, int radius, int colour) {

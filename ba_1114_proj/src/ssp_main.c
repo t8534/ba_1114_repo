@@ -165,14 +165,15 @@
 #include "driver_config.h"
 #include "target_config.h"
 
+#include "timer16.h"
 #include "gpio.h"
 #include "ssp.h"
 #include "spi_tests.h"
 #include "mpl115a.h"
 
 #include "st7565.h"
+#include "graphics.h"
 #include "hellombed.h"
-
 
 
 
@@ -182,10 +183,10 @@
 ******************************************************************************/
 int main (void)
 {
-	boolean_t res = FALSE;
-	double pressure;
-	uint32_t i = 0;
-	uint32_t k = 0;
+	//boolean_t res = FALSE;
+	//double pressure;
+	//uint32_t i = 0;
+	//uint32_t k = 0;
 
 
     SystemInit();
@@ -232,16 +233,31 @@ int main (void)
     ST7565_init();
     // draw "hello mbed"
     ST7565_send_pic(pic_hellombed);
-    wait(5);
+
+    //wait(5);
+    //delayMs(uint8_t timer_num, uint32_t delayInMs)
+    delayMs(0, 5000);
+
     // draw rectangle around the screen
-    ST7565_line(0, 0, ST7565_width()-1, 0, 0xFFFFFF);
-    wait(2);
-    ST7565_line(ST7565_width()-1, 0, ST7565_width()-1, ST7565_height()-1, 0xFFFFFF);
-    wait(2);
-    ST7565_line(ST7565_width()-1, ST7565_height()-1, 0, ST7565_height()-1, 0xFFFFFF);
-    wait(2);
-    ST7565_line(0, ST7565_height()-1, 0, 0, 0xFFFFFF);
-    wait(5);
+    GRAPH_line(0, 0, ST7565_getWidth()-1, 0, 0xFFFFFF);
+
+    //wait(2);
+    delayMs(0, 2000);
+
+    GRAPH_line(ST7565_getWidth()-1, 0, ST7565_getWidth()-1, ST7565_getHeight()-1, 0xFFFFFF);
+
+    //wait(2);
+    delayMs(0, 2000);
+
+    GRAPH_line(ST7565_getWidth()-1, ST7565_getHeight()-1, 0, ST7565_getHeight()-1, 0xFFFFFF);
+
+    //wait(2);
+    delayMs(0, 2000);
+
+    GRAPH_line(0, ST7565_getHeight()-1, 0, 0, 0xFFFFFF);
+
+    //wait(5);
+    delayMs(0, 5000);
 
     ST7565_clear_screen();
 
