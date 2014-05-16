@@ -1,3 +1,31 @@
+/*
+ *
+ *   Pinout:
+
+
+ *
+ *   spi, pin_power, pin_cs, pin_a0, pin_reset
+ *
+ *
+ * The display ST7565 is connected by SPI1 on lpcexpresso 1114 board.
+ * SPI0 is shared with debugger pins.
+ *
+ * SPI                                         ST7565
+ *
+ * SPI MOSI1 - PIO2_3  - PIO2_3 J6-45   -----  SI   - pin 16
+ * SPI MISO1 - PIO2_2  - PIO2_2 J6-14   -----
+ * SPI SCK1  - PIO2_1  - PIO2_1 J16-13  -----  SCL  - pin 17
+ * SPI SSEL1 - PIO2_0  - PIO2_0 J6-12   -----  CS1B - pin 20                 (chip active - low)
+ * IO_PIN    - PIO2_7  - PIO2_7         -----  A0   - pin 18 --- A0_PIN      (low - control data mode)
+ * IO_PIN    - PIO2_8  - PIO2_8         -----  RST  - pin 19 --- RESET_PIN   (low force reset)
+ *
+ */
+
+#include <string.h>
+#include "driver_config.h"
+#include "timer16.h"
+#include "gpio.h"
+#include "ssp.h"
 #include "st7565.h"
 
 #define LCDWIDTH 128
@@ -7,32 +35,109 @@
 // macro to make sure x falls into range from low to high (inclusive)
 #define CLAMP(x, low, high) { if ( (x) < (low) ) x = (low); if ( (x) > (high) ) x = (high); } while (0);
 
+typedef enum {
+	ST7565_PIN_RESET = 0,
+	ST7565_PIN_SET = 1
+} PinState_t;
+
 
 static unsigned char framebuffer[LCDWIDTH*LCDPAGES];
+static int _updating;
+static SSP_Dev_t SSP_Dev;
+
+
+// SSEL1 is controlled by SSP driver
+static void CS_Pin(PinState_t state)
+{
+	if (state == ST7565_PIN_SET)
+    {
+		SSP_SSEL1_GPIO_High();
+    }
+	else if (state == ST7565_PIN_RESET)
+	{
+    	SSP_SSEL1_GPIO_Low();
+    }
+
+    return;
+}
+
+
+static void A0_Pin(PinState_t state)
+{
+	if (state == ST7565_PIN_SET)
+    {
+		GPIOSetValue(PORT2, 7, 1);
+    }
+	else if (state == ST7565_PIN_RESET)
+	{
+		GPIOSetValue(PORT2, 7, 0);
+    }
+
+	return;
+}
+
+
+static void RESET_Pin(PinState_t state)
+{
+	if (state == ST7565_PIN_SET)
+    {
+		GPIOSetValue(PORT2, 8, 1);
+    }
+	else if (state == ST7565_PIN_RESET)
+	{
+		GPIOSetValue(PORT2, 8, 0);
+    }
+
+	return;
+}
+
+
+
 
 static void send_commands(const unsigned char* buf, size_t size)
 {
-    // for commands, A0 is low
-    _spi.format(8,0);
-    _spi.frequency(10000000);
-    _cs = 0;
-    _a0 = 0;
+    uint16_t rxVal16 = 0;
+    uint16_t txVal16 = 0;
+
+	// for commands, A0 is low
+    //_spi.format(8,0);
+    //_spi.frequency(10000000);
+
+	CS_Pin(ST7565_PIN_RESET);    //_cs = 0;
+	A0_Pin(ST7565_PIN_RESET);    //_a0 = 0;
+
     while ( size-- > 0 )
-        _spi.write(*buf++);
-    _cs = 1;
+    {
+        //_spi.write(*buf++);
+    	txVal16 = *buf++;
+    	SSP_WriteRead(&SSP_Dev, &txVal16, &rxVal16, 1);
+    }
+
+    CS_Pin(ST7565_PIN_SET);      //_cs = 1;
+
 }
 
 static void send_data(const unsigned char* buf, size_t size)
 {
-    // for data, A0 is high
-    _spi.format(8,0);
-    _spi.frequency(10000000);
-    _cs = 0;
-    _a0 = 1;
+    uint16_t rxVal16 = 0;
+    uint16_t txVal16 = 0;
+
+	// for data, A0 is high
+    //_spi.format(8,0);
+    //_spi.frequency(10000000);
+
+	CS_Pin(ST7565_PIN_RESET);    //_cs = 0;
+	A0_Pin(ST7565_PIN_SET);      //_a0 = 1;
+
     while ( size-- > 0 )
-        _spi.write(*buf++);
-    _cs = 1;
-    _a0 = 0;
+    {
+        //_spi.write(*buf++);
+    	txVal16 = *buf++;
+    	SSP_WriteRead(&SSP_Dev, &txVal16, &rxVal16, 1);
+    }
+
+    CS_Pin(ST7565_PIN_SET);      //_cs = 1;
+    A0_Pin(ST7565_PIN_RESET);    //_a0 = 0;
 }
 
 // set column and page number
@@ -49,6 +154,60 @@ static void set_xy(int x, int y)
     cmd[2] = (x>>4)&0xF;
     send_commands(cmd, 3);
 }
+
+
+static void ioInit(void)
+{
+    // SPI SSEL pin -> CS is controlled at SSP driver
+	CS_Pin(ST7565_PIN_SET);    // Chip is inactive
+
+	/* Enable AHB clock to the GPIO domain. */
+    LPC_SYSCON->SYSAHBCLKCTRL |= (1<<6);
+
+    /* A0 pin */
+    //LPC_IOCON->PIO2_7 &= ~0x07;
+    //LPC_IOCON->PIO2_7 |= 0x00;   /* GPIO pin mode = 0x00 */
+    LPC_IOCON->PIO2_7 = 0x00;   /* GPIO pin mode = 0x00 */
+    GPIOSetDir(PORT2, 7, 1);     /* Output */
+    GPIOSetValue(PORT2, 7, 0);   /* Low - Control Data mode */
+
+    /* RESET pin */
+    //LPC_IOCON->PIO2_8 &= ~0x07;
+    //LPC_IOCON->PIO2_8 |= 0x00;   /* GPIO pin mode = 0x00 */
+    LPC_IOCON->PIO2_8 = 0x00;   /* GPIO pin mode = 0x00 */
+    GPIOSetDir(PORT2, 8, 1);     /* Output */
+    GPIOSetValue(PORT2, 8, 1);   /* High - Reset not active */
+
+}
+
+//todo
+static void spiInit(void)
+{
+	SSP_Dev.Device = LPC_SSP1;
+	SSP_Dev.FrameFormat = SSP_FRAME_SPI;
+	SSP_Dev.DataSize = SSP_DATABITS_8;
+	SSP_Dev.CPOL = SSP_SPI_CPOL_HI;
+	SSP_Dev.CPHA = SSP_SPI_CPHA_FIRST;
+	SSP_Dev.LoopBackMode = SSP_LOOPBACK_OFF;
+	SSP_Dev.Mode = SSP_MASTER_MODE;
+
+	SSP_Dev.SCR = 0x07;              /* CR0->SerialClockRate */
+	SSP_Dev.CPSDVSR = 0x02;          /* SSPxCPSR->CPSDVSR */
+	SSP_Dev.DIV = 0x02;              /* SSPxCLKDIV->DIV */
+
+	SSP_Dev.SlaveOutputDisable = SSP_SLAVE_OUTPUT_ENABLE;
+	SSP_Dev.transferType = SSP_TRANSFER_POLLING;
+	SSP_Dev.InterruptCondition = SSP_ISR_NOFLAG_SET;
+	SSP_Dev.ISR_Processing = NULL;
+	SSP_Dev.SSEL_Mode = SSP_SSEL_GPIO;
+	SSP_Dev.IO_pins.MOSI_pin = SSP_MOSI1_PIN_2_3;
+	SSP_Dev.IO_pins.MISO_pin = SSP_MISO1_PIN_2_2;
+	SSP_Dev.IO_pins.SCK_pin = SSP_SCK1_PIN_2_1;
+	SSP_Dev.IO_pins.SSEL_pin = SSP_NO_PIN;
+
+	SSP_Init(&SSP_Dev);
+}
+
 
 
 // initialize and turn on the display
@@ -70,17 +229,46 @@ void ST7565_init()
         0x00,
         0xaf,    //Display on
     };
+
+
+    ioInit();
+    spiInit();
+
+
+
     //printf("Reset=L\n");
-    _reset = 0;
+
+    RESET_Pin(ST7565_PIN_RESET);    //_reset = 0;
+
     //printf("Power=H\n");
-    _power = 1;
-    //wait_ms(1);
+    //_power = 1;
+
+    //todo ? wait_ms(1);
+    delayMs(0, 1);
+
     //printf("Reset=H\n");
-    _reset = 1;
-    //wait(5);
+    RESET_Pin(ST7565_PIN_SET);    //_reset = 1;
+
+
+    //todo ? wait(5);
+    delayMs(0, 5000);
+
     //printf("Sending init commands\n");
     send_commands(init_seq, sizeof(init_seq));
 }
+
+
+int ST7565_getWidth(void)
+{
+    return LCDWIDTH;
+}
+
+
+int ST7565_getHeight(void)
+{
+    return LCDHEIGHT;
+}
+
 
 void ST7565_send_pic(const unsigned char* data)
 {
@@ -88,7 +276,7 @@ void ST7565_send_pic(const unsigned char* data)
 
 
     //printf("Sending picture\n");
-    for (int i = 0; i < LCDPAGES; i++)
+    for (i = 0; i < LCDPAGES; i++)
     {
         set_xy(0, i);
         send_data(data + i*LCDWIDTH, LCDWIDTH);
@@ -105,10 +293,10 @@ void ST7565_clear_screen()
     }
 }
 
-void ST7565_all_on(bool on)
+void ST7565_all_on(ST7565_PixelState_t state)
 {
     //printf("Sending all on %d\n", on);
-    unsigned char cmd = 0xA4 | (on ? 1 : 0);
+    unsigned char cmd = 0xA4 | (state ? 1 : 0);
     send_commands(&cmd, 1);
 }
 
@@ -118,7 +306,7 @@ void ST7565_pixel(int x, int y, int colour)
     CLAMP(y, 0, LCDHEIGHT-1);
     int page = y / 8;
     unsigned char mask = 1<<(y%8);
-    unsigned char *byte = &_framebuffer[page*LCDWIDTH + x];
+    unsigned char *byte = &framebuffer[page*LCDWIDTH + x];
 
     if ( colour == 0 )
         *byte &= ~mask; // clear pixel
@@ -183,7 +371,7 @@ void ST7565_fill(int x, int y, int width, int height, int colour)
         // we need to process partial bytes in the bottom page
         unsigned char mask = ~((1<<partpage) - 1); // this mask has 1s for bits we need to leave
         unsigned char *bytes = &framebuffer[page*LCDWIDTH + x];
-        for ( int i = 0; i < width; i++, bytes++ )
+        for ( i = 0; i < width; i++, bytes++ )
         {
           // clear "our" bits
           *bytes &= mask;

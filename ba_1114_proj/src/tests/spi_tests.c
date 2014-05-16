@@ -1,8 +1,7 @@
 /*
  * spi_tests.c
-
  *
- * rev. 140111_0916
+ * rev. 140411_2301
  *
  *
  * Test conditions:
@@ -114,31 +113,27 @@
  * It seems to be FIFO at least full flag has highest priority.
  * Than Timeout flag, and Overrun in this case.
  *
- *
- * Changelog.
- * ==========
- *
- *
- *
- *
- * TODO:
- *
  */
 
 
-#include "driver_config.h"  //todo describe this include MUST BE, and if SSP driver will be not ON in there,
-                            // than all the ssp.h and .c file will be not add to compile, so during compilation
-                            // of this file, there will be error. This approach is very buggy.
+/* This include MUST BE, and if SSP driver will be not ON in there, than all
+ * the ssp.h and .c file will be not add to compile, so during compilation
+ * of this file, there will be error. This approach is very buggy.
+ */
+#include "driver_config.h"
+
 #include "gpio.h"
 #include "ssp.h"
 #include "spi_tests.h"
 
 
+#define SSP_BUFSIZE    8
 
-static uint8_t src_addr[SSP_BUFSIZE];
-static uint8_t dest_addr[SSP_BUFSIZE];
 
-// Replace both with something better finally
+static uint16_t txBuff[SSP_BUFSIZE];
+static uint16_t rxBuff[SSP_BUFSIZE];
+
+/* Replace both with something better finally */
 static uint8_t pseudo_mutex;
 static uint8_t buffIdx;
 
@@ -146,7 +141,7 @@ void SPITESTS_SPI1DataProcessingISP(uint8_t val)
 {
     if (buffIdx < SSP_BUFSIZE)
     {
-    	dest_addr[buffIdx++] = val;
+    	rxBuff[buffIdx++] = val;
     }
     else
     {
@@ -157,6 +152,34 @@ void SPITESTS_SPI1DataProcessingISP(uint8_t val)
 }
 
 
+void SPITESTS_Init(void)
+{
+
+	SPITESTS_Dev.Device = LPC_SSP1;
+	SPITESTS_Dev.FrameFormat = SSP_FRAME_SPI;
+	SPITESTS_Dev.DataSize = SSP_DATABITS_8;
+	SPITESTS_Dev.CPOL = SSP_SPI_CPOL_LO;
+	SPITESTS_Dev.CPHA = SSP_SPI_CPHA_FIRST;
+	SPITESTS_Dev.LoopBackMode = SSP_LOOPBACK_ON;
+	SPITESTS_Dev.Mode = SSP_MASTER_MODE;
+
+	SPITESTS_Dev.SCR = 0x7;              /* CR0->SerialClockRate */
+	SPITESTS_Dev.CPSDVSR = 0x02;         /* SSPxCPSR->CPSDVSR */
+	SPITESTS_Dev.DIV = 0x02;             /* SSPxCLKDIV->DIV */
+
+	SPITESTS_Dev.SlaveOutputDisable = SSP_SLAVE_OUTPUT_ENABLE;
+	SPITESTS_Dev.transferType = SSP_TRANSFER_POLLING;
+	SPITESTS_Dev.InterruptCondition = SSP_ISR_NOFLAG_SET;
+	SPITESTS_Dev.ISR_Processing = NULL;
+	SPITESTS_Dev.SSEL_Mode = SSP_SSEL_AUTO;
+	SPITESTS_Dev.IO_pins.MOSI_pin = SSP_NO_PIN;
+	SPITESTS_Dev.IO_pins.MISO_pin = SSP_NO_PIN;
+	SPITESTS_Dev.IO_pins.SCK_pin = SSP_NO_PIN;
+	SPITESTS_Dev.IO_pins.SSEL_pin = SSP_NO_PIN;
+
+	SSP_Init(&SPITESTS_Dev);
+
+}
 
 
 /*****************************************************************************
@@ -165,251 +188,35 @@ void SPITESTS_SPI1DataProcessingISP(uint8_t val)
 ** Descriptions:		Internal Loopback test. The data are send and received
 **                      by the internal SSP logic.
 **
-**                      Please define at ssp.h:
-**
-**                      Example for SPI0:
-**
-**                      SSP_LOOPBACK_MODE0  1
-**                      SSP_SLAVE0          0
-**                      SSP_TX_RX_ONLY0     0
-**                      SSP_USE_CS0         1
-**
-**
 ** Parameters:			SPI port number
 **
 ** Returned value:		TRUE is test passed, FALSE if not.
 **
 *****************************************************************************/
-boolean_t SPITESTS_LoopbackInternalTest(uint8_t portNum)
+boolean_t SPITESTS_LoopbackInternalTest(SSP_Dev_t *dev)
 {
     boolean_t res = TRUE;
     uint8_t i = 0;
 
-    //todo
-    // why USE_CS, FIFOSIZE, BUFFSIZE, what about IRS
-
-    SSP_IOConfig(portNum);
-    SSP_Init(portNum);
-    for (i = 0; i < SSP_BUFSIZE; i++)
-    {
-  	    src_addr[i] = (uint8_t)i;
-  	    dest_addr[i] = 0;
-    }
-
-
-    /* Set SPI0 SSEL pin to output low. */
-    if ( SPI0 == portNum )
-    {  //todo is it not automatically set by SSP periph
-#if !SSP_USE_CS
-        GPIOSetValue(PORT0, 2, 0);
-#endif
-    }
-    else if ( SPI1 == portNum )
-    {
-#if !SSP_USE_CS
-	    GPIOSetValue(PORT2, 0, 0);
-#endif
-    }
-    else
-    {}
-
-
-    i = 0;
-    while (i < SSP_BUFSIZE)
-    {
-  	    /* to check the RXIM and TXIM interrupt, I send a block data at
-  	     * one time based on the FIFOSIZE(8).
-  	     */
-        SSP_Send( portNum, (uint8_t *)&src_addr[i], SSP_FIFOSIZE );
-
-  	    /* If RX interrupt is enabled, below receive routine can be
-  	     * also handled inside the ISR.
-  	     */
-  	    SSP_Receive( portNum, (uint8_t *)&dest_addr[i], SSP_FIFOSIZE );
-
-  	    i += SSP_FIFOSIZE;
-    }
-
-
-    /* Set SSEL pin to output high. */
-    if ( SPI0 == portNum )
-    {
-#if !SSP_USE_CS
-        GPIOSetValue( PORT0, 2, 1 );
-#endif
-    }
-    else if ( SPI1 == portNum )
-    {
-#if !SSP_USE_CS
-        GPIOSetValue( PORT2, 0, 1 );
-#endif
-    }
-    else
-    {}
-
 
     for (i = 0; i < SSP_BUFSIZE; i++)
     {
-        if (src_addr[i] != dest_addr[i])
+    	txBuff[i] = (uint8_t)i;
+    	rxBuff[i] = 0;
+    }
+
+    SSP_WriteRead(dev, txBuff, rxBuff, SSP_BUFSIZE);
+
+    for (i = 0; i < SSP_BUFSIZE; i++)
+    {
+        if (txBuff[i] != rxBuff[i])
         {
             res = FALSE;
             break;
         }
     }
 
-
 	return res;
 }
 
 
-/*****************************************************************************
-** Function name:		SPITESTS_LoopbackHardwarePoolingTest
-**
-** Descriptions:		Loopback test between hardwired SPI0 (master)
-**                      and SPI1 (slave).
-**                      This is not possible in an easy and clear way to send
-**                      and received more than FIFO length data, without ISP.
-**                      Therefore the 8 bytes of data is send by SPI0, and
-**                      received by SPI1.
-**
-**                      Pinout on LPCExpresso LPC1114 board:
-**
-**                                  uC pin    PCB
-**
-**                      SPI MOSI0 - PIO0_9  - (MOSI/SWO) PIO0_9 J6-5
-**                      SPI MISO0 - PIO0_8  - (MISO) PIO0_8 J6-6
-**                      SPI SCK0  - PIO2_11 - (SCK) PIO2_11 J6-7
-**                      SPI SSEL0 - PIO0_2  - (SSEL0) PIO0_2 J6-8
-**
-**                      SPI MOSI1 - PIO2_3  - PIO2_3 J6-45
-**                      SPI MISO1 - PIO2_2  - PIO2_2 J6-14
-**                      SPI SCK1  - PIO2_1  - PIO2_1 J16-13
-**                      SPI SSEL1 - PIO2_0  - PIO2_0 J6-12
-**
-**
-**                      Please define at ssp.h:
-**
-**                      SSP_LOOPBACK_MODE0  0
-**                      SSP_SLAVE0          0 - SPI0 Master
-**                      SSP_TX_RX_ONLY0     1
-**                      SSP_USE_CS0         1
-**
-**                      SSP_LOOPBACK_MODE1  0
-**                      SSP_SLAVE1          1 - SPI1 Slave
-**                      SSP_TX_RX_ONLY1     1
-**                      SSP_USE_CS1         1
-**
-**
-** Parameters:			None
-**
-** Returned value:      TRUE is test passed, FALSE if not.
-**
-*****************************************************************************/
-boolean_t SPITESTS_LoopbackHardwarePoolingTest(void)
-{
-	boolean_t res = TRUE;
-    uint8_t i = 0;
-
-    SSP_IOConfig(SPI0);
-    SSP_Init(SPI0);
-
-    SSP_IOConfig(SPI1);
-    SSP_Init(SPI1);
-
-    for (i = 0; i < SSP_FIFOSIZE; i++)
-    {
-  	    src_addr[i] = (uint8_t)i;
-  	    dest_addr[i] = 0;
-    }
-
-    SSP_Send(SPI0, (uint8_t *)src_addr, SSP_FIFOSIZE);
-    SSP_Receive(SPI1, (uint8_t *)dest_addr, SSP_FIFOSIZE);
-
-    for (i = 0; i < SSP_FIFOSIZE; i++)
-    {
-  	    if (src_addr[i] != dest_addr[i])
-  	    {
-            res = FALSE;
-            break;
-  	    }
-    }
-
-	return res;
-}
-
-
-/*****************************************************************************
-** Function name:		SPITESTS_LoopbackHardwareISPTest
-**
-** Descriptions:		Loopback test between hardwired SPI0 (master)
-**                      and SPI1 (slave).
-**                      The data are received by routine called by ISR when
-**                      receive a byte of data. Please see notes above.
-**
-**                      Pinout on LPCExpresso LPC1114 board:
-**
-**                                  uC pin    PCB
-**
-**                      SPI MOSI0 - PIO0_9  - (MOSI/SWO) PIO0_9 J6-5
-**                      SPI MISO0 - PIO0_8  - (MISO) PIO0_8 J6-6
-**                      SPI SCK0  - PIO2_11 - (SCK) PIO2_11 J6-7
-**                      SPI SSEL0 - PIO0_2  - (SSEL0) PIO0_2 J6-8
-**
-**                      SPI MOSI1 - PIO2_3  - PIO2_3 J6-45
-**                      SPI MISO1 - PIO2_2  - PIO2_2 J6-14
-**                      SPI SCK1  - PIO2_1  - PIO2_1 J16-13
-**                      SPI SSEL1 - PIO2_0  - PIO2_0 J6-12
-**
-**
-**                      Please define at ssp.h:
-**
-**                      SSP_LOOPBACK_MODE0  0
-**                      SSP_SLAVE0          0 - SPI0 Master
-**                      SSP_TX_RX_ONLY0     1
-**                      SSP_USE_CS0         1
-**
-**                      SSP_LOOPBACK_MODE1  0
-**                      SSP_SLAVE1          1 - SPI1 Slave
-**                      SSP_TX_RX_ONLY1     1
-**                      SSP_USE_CS1         1
-**
-**
-** Parameters:			None
-**
-** Returned value:      TRUE is test passed, FALSE if not.
-**
-*****************************************************************************/
-boolean_t SPITESTS_LoopbackHardwareISPTest(void)
-{
-	boolean_t res = TRUE;
-    uint16_t i = 0;
-
-    SSP_IOConfig(SPI0);
-    SSP_Init(SPI0);
-
-    SSP_IOConfig(SPI1);
-    SSP_Init(SPI1);
-
-    for (i = 0; i < SSP_BUFSIZE; i++)
-    {
-  	    src_addr[i] = (uint8_t)(i + 1);
-  	    dest_addr[i] = 0;
-    }
-    pseudo_mutex = 0;
-    buffIdx = 0;
-
-    SSP_Send(SPI0, (uint8_t *)src_addr, SSP_BUFSIZE);
-
-    // Wait until all data are received by SPI1 ISR
-    //while (0 == pseudo_mutex) {};
-    for (i = 0; i < SSP_BUFSIZE; i++)
-    {
-  	    if (src_addr[i] != dest_addr[i])
-  	    {
-            res = FALSE;
-            break;
-  	    }
-    }
-
-	return res;
-}

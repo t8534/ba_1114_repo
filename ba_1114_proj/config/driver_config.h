@@ -10,13 +10,12 @@
 
 #include <LPC11xx.h>
 
-#define CONFIG_ENABLE_DRIVER_CRP						1
-#define CONFIG_CRP_SETTING_NO_CRP						1
+#define CONFIG_ENABLE_DRIVER_CRP        1
+#define CONFIG_CRP_SETTING_NO_CRP       1
 
-#define CONFIG_ENABLE_DRIVER_SSP						1
-
-
-#define CONFIG_ENABLE_DRIVER_GPIO						1
+#define CONFIG_ENABLE_DRIVER_GPIO       1
+#define CONFIG_ENABLE_DRIVER_TIMER16    1
+#define CONFIG_ENABLE_DRIVER_SSP        1
 
  /* DRIVER_CONFIG_H_ */
 #endif

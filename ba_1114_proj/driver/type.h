@@ -92,6 +92,17 @@ typedef uint32_t bitfield32_t;
 #define GET_U32_MID_HIGH_BYTE(a)   (uint8_t)((((a) & (U32_MID_HIGH_BYTE_MASK))) >> 16U)
 #define GET_U32_HIGH_BYTE(a)       (uint8_t)((((a) & (U32_HIGH_BYTE_MASK))) >> 24U)
 
+/* a=target variable, b=bit number to act upon 0-n */
+#define BIT_SET(a,b) ((a) |= (1<<(b)))
+#define BIT_CLEAR(a,b) ((a) &= ~(1<<(b)))
+#define BIT_FLIP(a,b) ((a) ^= (1<<(b)))
+#define BIT_CHECK(a,b) ((a) & (1<<(b)))
+
+/* x=target variable, y=mask */
+#define BITMASK_SET(x,y) ((x) |= (y))
+#define BITMASK_CLEAR(x,y) ((x) &= (~(y)))
+#define BITMASK_FLIP(x,y) ((x) ^= (y))
+#define BITMASK_CHECK(x,y) ((x) & (y))
 
 
 #endif  /* __TYPE_H__ */

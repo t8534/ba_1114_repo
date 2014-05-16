@@ -55,6 +55,29 @@
  * UART3-RX/I2C2-SCL - PIO0_4 - J6-41
  *
  *
+ * The clock settings:
+ * -------------------
+ *
+ * See p.22 UM10389 manual.
+ *
+ * XTAL = 12 MHz
+ *
+ * PLL is used. The sys_pllclkout = 48 MHz
+ * main clock = 48 MHz
+ *
+ * System Clock Divider = 1 ->  system clock = 48 MHz
+ *
+ *
+ * SSP0 peripherial clock divider = 2 -> SPI0 Peripherial Clock SPI0_PCLK = 24 MHz
+ * Following BitFreq  formula for SPI0:
+ *
+ * BitFreq = SPI0_PCLK / (CPSDVSR x (SCR + 1)) = SPI0_PCLK/16 = 24/16 = 1.5 Mbps
+ * CPSDVSR = 2
+ * SCR = 7
+ *
+ *
+ *
+ *
  * Additional notes:
  * =================
  *
@@ -137,17 +160,20 @@
  *
  */
 
+//#include <LPC11xx.h>
 
 #include "driver_config.h"
 #include "target_config.h"
 
+#include "timer16.h"
 #include "gpio.h"
 #include "ssp.h"
 #include "spi_tests.h"
+#include "mpl115a.h"
 
 #include "st7565.h"
+#include "graphics.h"
 #include "hellombed.h"
-
 
 
 
@@ -157,7 +183,10 @@
 ******************************************************************************/
 int main (void)
 {
-	boolean_t res = FALSE;
+	//boolean_t res = FALSE;
+	//double pressure;
+	//uint32_t i = 0;
+	//uint32_t k = 0;
 
 
     SystemInit();
@@ -167,30 +196,35 @@ int main (void)
     //GPIOSetValue(LED_PORT, LED_BIT, LED_ON);
     GPIOSetValue(LED_PORT, LED_BIT, LED_OFF);
 
+
+// Pressure sensor test
 #if 0
-    res = SPITESTS_LoopbackInternalTest(SPI1);
+    MPL115AIntitalize();
+    MPL115AReadCoeffs();
+    GPIOSetValue(LED_PORT, LED_BIT, LED_ON);
+    // delay
+    for (i = 0; i < 500000; i++)
+    {
+        k += 1;
+    }
+    MPL115AReadPressureAndTempADC();
+//    MPL115ACalculatePressure(&pressure);
+    while (1) {}
+#endif
+
+
+// Loopback test
+#if 0
+    SPITESTS_Init();
+    res = SPITESTS_LoopbackInternalTest(&SPITESTS_Dev);
     if (FALSE == res)
     {
     	GPIOSetValue(LED_PORT, LED_BIT, LED_ON);
     }
 #endif
 
+    GPIOSetValue(LED_PORT, LED_BIT, LED_ON);
 
-#if 0
-    res = SPITESTS_LoopbackHardwarePoolingTest();
-    if (FALSE == res)
-    {
-    	GPIOSetValue(LED_PORT, LED_BIT, LED_ON);
-    }
-#endif
-
-#if 0
-    res = SPITESTS_LoopbackHardwareISPTest();
-    if (FALSE == res)
-    {
-    	GPIOSetValue(LED_PORT, LED_BIT, LED_ON);
-    }
-#endif
 
     //while (1) {};  // For tests, to wait until received timeout ISR will be generated.
 
@@ -199,16 +233,31 @@ int main (void)
     ST7565_init();
     // draw "hello mbed"
     ST7565_send_pic(pic_hellombed);
-    wait(5);
+
+    //wait(5);
+    //delayMs(uint8_t timer_num, uint32_t delayInMs)
+    delayMs(0, 5000);
+
     // draw rectangle around the screen
-    ST7565_line(0, 0, ST7565_width()-1, 0, 0xFFFFFF);
-    wait(2);
-    ST7565_line(ST7565_width()-1, 0, ST7565_width()-1, ST7565_height()-1, 0xFFFFFF);
-    wait(2);
-    ST7565_line(ST7565_width()-1, ST7565_height()-1, 0, ST7565_height()-1, 0xFFFFFF);
-    wait(2);
-    ST7565_line(0, ST7565_height()-1, 0, 0, 0xFFFFFF);
-    wait(5);
+    GRAPH_line(0, 0, ST7565_getWidth()-1, 0, 0xFFFFFF);
+
+    //wait(2);
+    delayMs(0, 2000);
+
+    GRAPH_line(ST7565_getWidth()-1, 0, ST7565_getWidth()-1, ST7565_getHeight()-1, 0xFFFFFF);
+
+    //wait(2);
+    delayMs(0, 2000);
+
+    GRAPH_line(ST7565_getWidth()-1, ST7565_getHeight()-1, 0, ST7565_getHeight()-1, 0xFFFFFF);
+
+    //wait(2);
+    delayMs(0, 2000);
+
+    GRAPH_line(0, ST7565_getHeight()-1, 0, 0, 0xFFFFFF);
+
+    //wait(5);
+    delayMs(0, 5000);
 
     ST7565_clear_screen();
 

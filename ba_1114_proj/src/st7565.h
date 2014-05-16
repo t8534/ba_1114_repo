@@ -32,14 +32,17 @@ Page 0  | 1 |
     where spi is an instance of SPI class
 */
 
-    int _updating;   //todo ????
-public:
+/*
     DogLCD(SPI& spi, PinName power, PinName cs, PinName a0, PinName reset):
     _spi(spi), _cs(cs), _a0(a0), _reset(reset), _power(power), _updating(0)
     {
     }
+*/
 
-
+typedef enum {
+	ST7565_RESET = 0,
+	ST7565_SET = 1,
+} ST7565_PixelState_t;
 
 
 // initialize and turn on the display
@@ -49,10 +52,10 @@ void ST7565_send_pic(const unsigned char* data);
 // clear screen
 void ST7565_clear_screen();
 // turn all pixels on
-void ST7565_all_on(bool on = true);
+void ST7565_all_on(ST7565_PixelState_t state);
 
-int ST7565_width()  {return LCDWIDTH;};
-int ST7565_height() {return LCDHEIGHT;};
+int ST7565_getWidth(void);
+int ST7565_getHeight(void);
 void ST7565_pixel(int x, int y, int colour);
 void ST7565_fill(int x, int y, int width, int height, int colour);
 void ST7565_beginupdate();

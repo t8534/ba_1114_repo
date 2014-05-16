@@ -1,0 +1,89 @@
+
+Initially SPI0 divider is set to 1. It divide main clock (12MHz) to
+SSP0 peripherial clock.
+
+
+LPC_SYSCON->SSP0CLKDIV    = SSP0CLKDIV_Val;
+
+
+lpcopen_130/software/lpc_core/lpc_chip/chip_11xx/ssp_11xx.c
+
+
+/* Set the clock frequency for SSP interface */
+void Chip_SSP_SetBitRate(LPC_SSP_T *pSSP, uint32_t bitRate)
+{
+	uint32_t main_clk, ssp_div;
+	uint32_t ssp_clk, cr0_div, cmp_clk, prescale;
+
+	main_clk = Chip_Clock_GetMainClockRate();
+#ifdef SSP1_SUPPORT
+	if (pSSP == LPC_SSP1) {
+		ssp_div = Chip_Clock_GetSSP1ClockDiv();
+	}
+	else
+#endif
+	{
+		ssp_div = Chip_Clock_GetSSP0ClockDiv();
+	}
+
+	ssp_clk = main_clk / ssp_div;
+
+	cr0_div = 0;
+	cmp_clk = 0xFFFFFFFF;
+	prescale = 2;
+
+	while (cmp_clk > bitRate) {
+		cmp_clk = ssp_clk / ((cr0_div + 1) * prescale);
+		if (cmp_clk > bitRate) {
+			cr0_div++;
+			if (cr0_div > 0xFF) {
+				cr0_div = 0;
+				prescale += 2;
+			}
+		}
+	}
+
+	IP_SSP_Set_ClockRate(pSSP, cr0_div, prescale);
+}
+
+----------------
+
+gcode_lpc1700/Drivers/source/lpc17xx_spi.c
+
+/*********************************************************************//**
+ * @brief 		Setup clock rate for SPI device
+ * @param[in] 	SPIx	SPI peripheral definition, should be LPC_SPI
+ * @param[in]	target_clock : clock of SPI (Hz)
+ * @return 		None
+ ***********************************************************************/
+void SPI_SetClock (LPC_SPI_TypeDef *SPIx, uint32_t target_clock)
+{
+	uint32_t spi_pclk;
+	uint32_t prescale, temp;
+
+	CHECK_PARAM(PARAM_SPIx(SPIx));
+
+	if (SPIx == LPC_SPI){
+		spi_pclk =  CLKPWR_GetPCLK (CLKPWR_PCLKSEL_SPI);
+	} else {
+		return;
+	}
+
+	prescale = 8;
+	// Find closest clock to target clock
+	while (1){
+		temp = target_clock * prescale;
+		if (temp >= spi_pclk){
+			break;
+		}
+		prescale += 2;
+		if(prescale >= 254){
+			break;
+		}
+	}
+
+	// Write to register
+	SPIx->SPCCR = SPI_SPCCR_COUNTER(prescale);
+}
+
+
