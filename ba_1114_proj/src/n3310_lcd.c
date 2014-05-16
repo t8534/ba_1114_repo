@@ -2,8 +2,8 @@
 
 
 
-#include "N3310LCD.h"
-#include "N3310Fonts.h"
+#include "n3310_lcd.h"
+#include "n3310_fonts.h"
 
 N3310LCD::N3310LCD (PinName mosi, PinName miso, PinName sck,
                     PinName ce, PinName dat_cmd, PinName lcd_rst, PinName bl_on) :
