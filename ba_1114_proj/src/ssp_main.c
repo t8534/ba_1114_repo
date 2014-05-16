@@ -170,6 +170,30 @@
 #include "spi_tests.h"
 #include "mpl115a.h"
 
+// n3310 lcd
+#include "N3310LCD.h"
+#include "mbed_bmp.h"
+
+
+
+// menu starting points
+#define MENU_X    10        // 0-83
+#define MENU_Y    1        // 0-5
+
+#define DEMO_ITEMS 4
+
+// menu definition
+char menu_items[DEMO_ITEMS][12] =
+{
+    "TEMPERATURE",
+    "CHAR MAP",
+    "BITMAP",
+    "ABOUT"
+};
+
+
+
+
 
 
 /******************************************************************************
@@ -192,7 +216,7 @@ int main (void)
 
 
 
-#if 1
+#if 0
     MPL115AIntitalize();
     MPL115AReadCoeffs();
     GPIOSetValue(LED_PORT, LED_BIT, LED_ON);
@@ -217,6 +241,16 @@ int main (void)
     }
 #endif
 
+
+    // N3310 lcd tests
+    N3310LCD_init();
+    N3310LCD_cls();
+    N3310LCD_backlight(1);
+
+
+
+
+
     //while (1) {};  // For tests, to wait until received timeout ISR will be generated.
 
 
@@ -227,28 +261,7 @@ int main (void)
     // 3310 section - begin
     ///////////////////////////////////////////////////////////////////////
 
-#include "N3310SPIConfig.h"
-#include "N3310LCD.h"
-#include "Joystick.h"
-#include "mbed_bmp.h"
 
-// demo for nuelectronics Nokia 3310 LCD shield (www.nuelectronics.com)
-//
-
-// menu starting points
-#define MENU_X    10        // 0-83
-#define MENU_Y    1        // 0-5
-
-#define DEMO_ITEMS 4
-
-// menu definition
-char menu_items[DEMO_ITEMS][12] =
-{
-    "TEMPERATURE",
-    "CHAR MAP",
-    "BITMAP",
-    "ABOUT"
-};
 
 void temperature(N3310LCD* lcd)
 {
