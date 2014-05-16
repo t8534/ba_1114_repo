@@ -167,6 +167,7 @@
 
 #include "gpio.h"
 #include "ssp.h"
+#include "timer16.h"
 #include "spi_tests.h"
 #include "mpl115a.h"
 
@@ -192,6 +193,80 @@ char menu_items[DEMO_ITEMS][12] =
 };
 
 
+
+ void (*menu_funcs[DEMO_ITEMS])() =
+ {
+     temperature,
+     charmap,
+     bitmap,
+     about
+ };
+
+
+ void about(void)
+ {
+	 N3310LCD_writeString(0, 1, "Nokia 3310 LCD", NORMAL);
+	 N3310LCD_writeString(15, 2, "driven by", NORMAL);
+	 N3310LCD_writeString(30, 3, "mbed", NORMAL);
+ }
+
+
+ void bitmap(void)
+ {
+	 N3310LCD_drawBitmap(20, 1, mbed_bmp, 48, 24);
+ }
+
+
+ void charmap(void)
+ {
+     for(int i = 0; i < 5; i++)
+     {
+         for(int j = 0; j < 14; j++)
+         {
+        	 N3310LCD_locate(j*6, i);
+        	 N3310LCD_writeChar(i*14 + j + 32, NORMAL);
+         }
+     }
+ }
+
+
+ void temperature(void)
+ {
+	 N3310LCD_writeStringBig(5, 1, "+21.12", NORMAL);
+	 N3310LCD_writeString(73, 2, "C", NORMAL);
+ }
+
+
+ void autoDemo(void)
+ {
+     while (true)
+     {
+         for (int i = 0; i < DEMO_ITEMS; i++)
+         {
+        	 N3310LCD_cls();
+        	 N3310LCD_backlight(1);
+        	 delayMs(0, 1000);    //wait(1);
+
+             (*menu_funcs[i])(lcd);
+
+             delayMs(0, 3000);    //wait(3);
+
+             N3310LCD_backlight(0);
+             delayMs(0, 3000);    //wait(3);
+         }
+     }
+ }
+
+
+ void initMenu(void)
+ {
+	 N3310LCD_writeString(MENU_X, MENU_Y, menu_items[0], HIGHLIGHT );
+
+     for (int i = 1; i < DEMO_ITEMS; i++)
+     {
+    	 N3310LCD_writeString(MENU_X, MENU_Y + i, menu_items[i], NORMAL);
+     }
+ }
 
 
 
@@ -247,127 +322,18 @@ int main (void)
     N3310LCD_cls();
     N3310LCD_backlight(1);
 
+    // demo stuff
+    //autoDemo();
 
-
+    initMenu();
 
 
     //while (1) {};  // For tests, to wait until received timeout ISR will be generated.
+    //GPIOSetValue(LED_PORT, LED_BIT, LED_ON);
 
 
-    GPIOSetValue(LED_PORT, LED_BIT, LED_ON);
-
-
-    ///////////////////////////////////////////////////////////////////////
-    // 3310 section - begin
-    ///////////////////////////////////////////////////////////////////////
-
-
-
-void temperature(N3310LCD* lcd)
-{
-    lcd->writeStringBig(5, 1, "+21.12", NORMAL);
-    lcd->writeString(73, 2, "C", NORMAL);
-}
-
-void charmap(N3310LCD* lcd)
-{
-    for(int i = 0; i < 5; i++)
-    {
-        for(int j = 0; j < 14; j++)
-        {
-          lcd->locate(j*6, i);
-          lcd->writeChar(i*14 + j + 32, NORMAL);
-        }
-    }
-}
-
-void bitmap(N3310LCD* lcd)
-{
-    lcd->drawBitmap(20, 1, mbed_bmp, 48, 24);
-}
-
-void about(N3310LCD* lcd)
-{
-    lcd->writeString(0, 1, "Nokia 3310 LCD", NORMAL);
-    lcd->writeString(15, 2, "driven by", NORMAL);
-    lcd->writeString(30, 3, "mbed", NORMAL);
-}
-
-void (*menu_funcs[DEMO_ITEMS])(N3310LCD*) =
-{
-    temperature,
-    charmap,
-    bitmap,
-    about
-};
-
-void initMenu(N3310LCD* lcd)
-{
-    lcd->writeString(MENU_X, MENU_Y, menu_items[0], HIGHLIGHT );
-
-    for (int i = 1; i < DEMO_ITEMS; i++)
-    {
-        lcd->writeString(MENU_X, MENU_Y + i, menu_items[i], NORMAL);
-    }
-}
-
-void waitforOKKey(N3310LCD* lcd, Joystick* jstick)
-{
-    lcd->writeString(38, 5, "OK", HIGHLIGHT );
-
-    int key = 0xFF;
-    while (key != CENTER_KEY)
-    {
-        for (int i = 0; i < NUM_KEYS; i++)
-        {
-            if (jstick->getKeyState(i) !=0)
-            {
-                jstick->resetKeyState(i);  // reset
-                if (CENTER_KEY == i) key = CENTER_KEY;
-            }
-        }
-    }
-}
-
-void autoDemo(N3310LCD* lcd)
-{
-    while (true)
-    {
-        for (int i = 0; i < DEMO_ITEMS; i++)
-        {
-            lcd->cls();
-            lcd->backlight(ON);
-            wait(1);
-
-            (*menu_funcs[i])(lcd);
-
-            wait(3);
-
-            lcd->backlight(OFF);
-            wait(3);
-        }
-    }
-}
-
-int main()
-{
-    Joystick jstick(N3310SPIPort::AD0);
-    N3310LCD lcd(N3310SPIPort::MOSI, N3310SPIPort::MISO, N3310SPIPort::SCK,
-                 N3310SPIPort::CE, N3310SPIPort::DAT_CMD, N3310SPIPort::LCD_RST,
-                 N3310SPIPort::BL_ON);
-    lcd.init();
-    lcd.cls();
-    lcd.backlight(ON);
-
-    // demo stuff
-    // autoDemo(&lcd);
-
-    initMenu(&lcd);
-    int currentMenuItem = 0;
-    Ticker jstickPoll;
-    jstickPoll.attach(&jstick, &Joystick::updateADCKey, 0.01);    // check ever 10ms
-
-
+#if 0
+    // orig 3310, for compare
     while (true)
     {
     for (int i = 0; i < NUM_KEYS; i++)
@@ -412,17 +378,13 @@ int main()
         }
     }
     }
-
-    return EXIT_SUCCESS;
-
-    ///////////////////////////////////////////////////////////////////////
-    // 3310 section - end off
-    ///////////////////////////////////////////////////////////////////////
+#endif
 
 
 
-
+    GPIOSetValue(LED_PORT, LED_BIT, LED_ON);
     while (1) {}
+
 
     return 0;
 }
