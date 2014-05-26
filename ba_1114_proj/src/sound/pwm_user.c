@@ -7,18 +7,33 @@
 
 //
 // The Timer1 16 bit is used for sound generation.
+
 // MAT0 reg is used to define PWM cycle
 // MAT1 define duration time.
 // Duration is volume level. Initialized to 1/2 of cycle.
+// MAT1 define second part of cycle. The PWM cycle start
+// always with Low.
 //
-// MAT1 Output ????
-// PWM signal starts always from Low level.
+// TIMER1 MAT1 is output pin - P1.10 (FUNC = 0x02, MODE = 0x02 (default pull-up resistor) )
+//
+// PWM signal starts always from Low level. On all configured
+// MATx outputs this is set to Low. Than after reach any MATx register,
+// the assigned pin is going High, until timer counter is reset.
+// Than it goes again to Low after match of MATx assigned to the given pin.
+// For example let MAT0 is set to 1000 ticks, and reset Timer after
+// match. Let MAT1 is set to 400 ticks.
+// When Timer start, out pin related to MAT1 goes Low, like all the
+// other. Than when Timer counts 400 ticks it match MAT1, so pin
+// related to MAT1 goes High. But after Timer counts to 1000, it will
+// match MAT0, the Timer will be reset. And because of Timer reset,
+// all MATx pins goes back to Low.
 //
 
+// The Timer driver is hard set and this is need to reconfigure is as well.
 
 
 
-// The PWM cycle should be 1000 ms on init,
+// The PWM cycle should be 1000 ms on init, todo is it 1 Hz ?
 // duration 1/2 cycle - maximum voice level
 void PWMUSR_Init(uint16_t cycle_ms)
 {
