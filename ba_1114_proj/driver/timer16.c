@@ -32,7 +32,7 @@ volatile uint32_t timer16_0_period = 0;
 volatile uint32_t timer16_1_period = 0;
 
 /*****************************************************************************
-** Function name:		delayMs
+** Function name:		TMR16_DelayMs
 **
 ** Descriptions:		Start the timer delay in milo seconds
 **						until elapsed
@@ -42,7 +42,7 @@ volatile uint32_t timer16_1_period = 0;
 ** Returned value:		None
 ** 
 *****************************************************************************/
-void delayMs(uint8_t timer_num, uint32_t delayInMs)
+void TMR16_DelayMs(uint8_t timer_num, uint32_t delayInMs)
 {
   if (timer_num == 0)
   {
@@ -76,7 +76,7 @@ void delayMs(uint8_t timer_num, uint32_t delayInMs)
 }
 
 /******************************************************************************
-** Function name:		TIMER16_0_IRQHandler
+** Function name:		TMR16_0_IRQHandler
 **
 ** Descriptions:		Timer/Counter 0 interrupt handler
 **						executes each 10ms @ 60 MHz CPU Clock
@@ -85,7 +85,7 @@ void delayMs(uint8_t timer_num, uint32_t delayInMs)
 ** Returned value:		None
 ** 
 ******************************************************************************/
-void TIMER16_0_IRQHandler(void)
+void TMR16_0_IRQHandler(void)
 {  
   if ( LPC_TMR16B0->IR & 0x1 )
   {
@@ -101,7 +101,7 @@ void TIMER16_0_IRQHandler(void)
 }
 
 /******************************************************************************
-** Function name:		TIMER16_1_IRQHandler
+** Function name:		TMR16_1_IRQHandler
 **
 ** Descriptions:		Timer/Counter 1 interrupt handler
 **						executes each 10ms @ 60 MHz CPU Clock
@@ -110,7 +110,7 @@ void TIMER16_0_IRQHandler(void)
 ** Returned value:		None
 ** 
 ******************************************************************************/
-void TIMER16_1_IRQHandler(void)
+void TMR16_1_IRQHandler(void)
 {  
   if ( LPC_TMR16B1->IR & 0x1 )
   {  
@@ -126,7 +126,7 @@ void TIMER16_1_IRQHandler(void)
 }
 
 /******************************************************************************
-** Function name:		enable_timer
+** Function name:		TMR16_Enable
 **
 ** Descriptions:		Enable timer
 **
@@ -134,7 +134,7 @@ void TIMER16_1_IRQHandler(void)
 ** Returned value:		None
 ** 
 ******************************************************************************/
-void enable_timer16(uint8_t timer_num)
+void TMR16_Enable(uint8_t timer_num)
 {
   if ( timer_num == 0 )
   {
@@ -148,7 +148,7 @@ void enable_timer16(uint8_t timer_num)
 }
 
 /******************************************************************************
-** Function name:		disable_timer
+** Function name:		TMR16_Disable
 **
 ** Descriptions:		Disable timer
 **
@@ -156,7 +156,7 @@ void enable_timer16(uint8_t timer_num)
 ** Returned value:		None
 ** 
 ******************************************************************************/
-void disable_timer16(uint8_t timer_num)
+void TMR16_Disable(uint8_t timer_num)
 {
   if ( timer_num == 0 )
   {
@@ -170,7 +170,7 @@ void disable_timer16(uint8_t timer_num)
 }
 
 /******************************************************************************
-** Function name:		reset_timer
+** Function name:		TMR16_Reset
 **
 ** Descriptions:		Reset timer
 **
@@ -178,7 +178,7 @@ void disable_timer16(uint8_t timer_num)
 ** Returned value:		None
 ** 
 ******************************************************************************/
-void reset_timer16(uint8_t timer_num)
+void TMR16_Reset(uint8_t timer_num)
 {
   uint32_t regVal;
 
@@ -198,7 +198,7 @@ void reset_timer16(uint8_t timer_num)
 }
 
 /******************************************************************************
-** Function name:		init_timer
+** Function name:		TMR16_Init
 **
 ** Descriptions:		Initialize timer, set timer interval, reset timer,
 **						install timer interrupt handler
@@ -207,7 +207,7 @@ void reset_timer16(uint8_t timer_num)
 ** Returned value:		None
 ** 
 ******************************************************************************/
-void init_timer16(uint8_t timer_num, uint16_t TimerInterval)
+void TMR16_Init(uint8_t timer_num, uint16_t TimerInterval)
 {
   if ( timer_num == 0 )
   {
@@ -273,7 +273,7 @@ void init_timer16(uint8_t timer_num, uint16_t TimerInterval)
   return;
 }
 /******************************************************************************
-** Function name:		init_timer16PWM
+** Function name:		TMR16_InitPWM
 **
 ** Descriptions:		Initialize timer as PWM
 **
@@ -285,7 +285,7 @@ void init_timer16(uint8_t timer_num, uint16_t TimerInterval)
 ** Returned value:		None
 ** 
 ******************************************************************************/
-void init_timer16PWM(uint8_t timer_num, uint32_t period, uint8_t match_enable, uint8_t cap_enabled)
+void TMR16_InitPWM(uint8_t timer_num, uint32_t period, uint8_t match_enable, uint8_t cap_enabled)
 {
 	
 //	NVIC_InitTypeDef NVIC_InitStructure;
@@ -396,7 +396,7 @@ void init_timer16PWM(uint8_t timer_num, uint32_t period, uint8_t match_enable, u
 
 }
 /******************************************************************************
-** Function name:		pwm16_setMatch
+** Function name:		TMR16_SetMatchPWM
 **
 ** Descriptions:		Set the pwm16 match values
 **
@@ -405,7 +405,7 @@ void init_timer16PWM(uint8_t timer_num, uint32_t period, uint8_t match_enable, u
 ** Returned value:		None
 ** 
 ******************************************************************************/
-void setMatch_timer16PWM (uint8_t timer_num, uint8_t match_nr, uint32_t value)
+void TMR16_SetMatchPWM(uint8_t timer_num, uint8_t match_nr, uint32_t value)
 {
 	if (timer_num)
 	{

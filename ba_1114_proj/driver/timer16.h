@@ -50,15 +50,22 @@ void delayMs(uint8_t timer_num, uint32_t delayInMs);
 #define MATCH2	(1<<2)
 #define MATCH3	(1<<3)
 
+
+
+
+
+
 void TIMER16_0_IRQHandler(void);
 void TIMER16_1_IRQHandler(void);
 
-void enable_timer16(uint8_t timer_num);
-void disable_timer16(uint8_t timer_num);
-void reset_timer16(uint8_t timer_num);
-void init_timer16(uint8_t timer_num, uint16_t timerInterval);
-void init_timer16PWM(uint8_t timer_num, uint32_t period, uint8_t match_enable, uint8_t cap_enabled);
-void setMatch_timer16PWM (uint8_t timer_num, uint8_t match_nr, uint32_t value);
+void TMR16_Enable(uint8_t timer_num);
+void TMR16_Disable(uint8_t timer_num);
+void TMR16_Reset(uint8_t timer_num);
+void TMR16_Init(uint8_t timer_num, uint16_t timerInterval);
+void TMR16_InitPWM(uint8_t timer_num, uint32_t period, uint8_t match_enable, uint8_t cap_enabled);
+void TMR16_SetMatchPWM (uint8_t timer_num, uint8_t match_nr, uint32_t value);
+
+
 
 #endif
 #endif /* end __TIMER16_H */
