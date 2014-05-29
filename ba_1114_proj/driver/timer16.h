@@ -38,6 +38,7 @@
 /* The test is either MAT_OUT or CAP_IN. Default is MAT_OUT. */
 #define TIMER_MATCH		0
 
+
 void delayMs(uint8_t timer_num, uint32_t delayInMs);
 
 #define EMC0	4
@@ -51,10 +52,6 @@ void delayMs(uint8_t timer_num, uint32_t delayInMs);
 #define MATCH3	(1<<3)
 
 
-
-
-
-
 void TIMER16_0_IRQHandler(void);
 void TIMER16_1_IRQHandler(void);
 
@@ -64,6 +61,40 @@ void TMR16_Reset(uint8_t timer_num);
 void TMR16_Init(uint8_t timer_num, uint16_t timerInterval);
 void TMR16_InitPWM(uint8_t timer_num, uint32_t period, uint8_t match_enable, uint8_t cap_enabled);
 void TMR16_SetMatchPWM (uint8_t timer_num, uint8_t match_nr, uint32_t value);
+
+
+// PWM section
+typdef enum {
+	TMR16_PWM_CH0,
+	TMR16_PWM_CH1,
+	TMR16_PWM_CH2,
+	TMR16_PWM_CH3,
+	TMR16_PWM_CH4,
+	TMR16_PWM_CH5,
+	TMR16_PWM_CH6,
+} TMR16_PWMChannel_t;
+
+
+typedef struct {
+	LPC_TMR_TypeDef *Device;   /* LPC_TMR16B0 or LPC_TMR16B1 */
+	TMR16_PWMChannel_t PWMChannel;
+
+	uint8_t tmrPrescaler;    //todo add description how to calculate.
+
+	uint16_t pwmCycle_us;
+	uint16_t pwmDuty_us;
+
+} TMR16_PWMConfig_t;
+
+
+void TMR16_PWMInit(TMR16_PWMConfig_t *PWMCfg);
+void TMR16_PWMDeInit(TMR16_PWMConfig_t *PWMCfg);
+void TMR16_PWMSetCycle(TMR16_PWMConfig_t *PWMCfg);
+void TMR16_PWMSetDuty(TMR16_PWMConfig_t *PWMCfg);
+void TMR16_PWMEnable(TMR16_PWMConfig_t *PWMCfg);
+void TMR16_PWMDisable(TMR16_PWMConfig_t *PWMCfg);
+
+
 
 
 

@@ -451,6 +451,69 @@ void TMR16_SetMatchPWM(uint8_t timer_num, uint8_t match_nr, uint32_t value)
 
 }
 
+
+// New version for PWM
+
+void TMR16_PWMInit(TMR16_PWMConfig_t *PWMCfg)
+{
+
+	// Disable timer
+	PWMCfg->Device->TCR = 0;
+
+
+    if (PWMCfg->Device == LPC_TMR16B0)
+    {
+    	// Enable clock for timer
+    	LPC_SYSCON->SYSAHBCLKCTRL |= (1 << 7);
+    }
+    else if (PWMCfg->Device == LPC_TMR16B1)
+    {
+    	// Enable clock for timer
+    	LPC_SYSCON->SYSAHBCLKCTRL |= (1 << 8);
+    }
+
+
+    PWMCfg->Device->PR = PWMCfg->tmrPrescaler;
+    PWMCfg->Device->MR0 = pwmCycle_us;    // set PWM cycle
+
+
+}
+
+
+void TMR16_PWMDeInit(TMR16_PWMConfig_t *PWMCfg)
+{
+
+}
+
+
+void TMR16_PWMSetCycle(TMR16_PWMConfig_t *PWMCfg)
+{
+
+}
+
+
+void TMR16_PWMSetDuty(TMR16_PWMConfig_t *PWMCfg)
+{
+
+}
+
+
+void TMR16_PWMEnable(TMR16_PWMConfig_t *PWMCfg)
+{
+
+}
+
+
+void TMR16_PWMDisable(TMR16_PWMConfig_t *PWMCfg)
+{
+
+
+}
+
+
+
+
+
 #endif
 /******************************************************************************
 **                            End Of File
