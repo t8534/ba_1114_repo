@@ -83,6 +83,29 @@ void TMR16_SetMatchPWM (uint8_t timer_num, uint8_t match_nr, uint32_t value);
 //    TMR16_PWM_CH1    CT16B1_MAT1         IOCON_PIO1_10
 //
 //
+// Rules for single edge controlled PWM outputs:
+//
+// 1. All single edge controlled PWM outputs go LOW at the beginning of each PWM cycle
+// (timer is set to zero) unless their match value is equal to zero.
+//
+// 2. Each PWM output will go HIGH when its match value is reached. If no match occurs
+// (i.e. the match value is greater than the PWM cycle length), the PWM output remains
+// continuously LOW.
+//
+// 3. If a match value larger than the PWM cycle length is written to the match register, and
+// the PWM signal is HIGH already, then the PWM signal will be cleared on the next start
+// of the next PWM cycle.
+//
+// 4. If a match register contains the same value as the timer reset value (the PWM cycle
+// length), then the PWM output will be reset to LOW on the next clock tick. Therefore,
+// the PWM output will always consist of a one clock tick wide positive pulse with a
+// period determined by the PWM cycle length (i.e. the timer reload value).
+//
+// 5. If a match register is set to zero, then the PWM output will go to HIGH the first time the
+// timer goes back to zero and will stay HIGH continuously.
+//
+
+
 typdef enum {
 	TMR16_PWM_CH0,
 	TMR16_PWM_CH1,
@@ -142,12 +165,19 @@ typedef struct {
 	TMR16_PWMPinMode_t PWMPinMode;
 	TMR16_PWMChannelPinPWMMode_t PWMChannelPinPWMMode;
 
-
 	// Control Timer Counter (TC) action when Match Register match (MCR).
 	// Select Match Register which control Timer Counter action on match (MCR).
 	// Example:
 	// MCR |= ((TMR16_PWM_TC_IRQ | TMR16_PWM_TC_RESET | TMR16_PWM_TC_STOP) << TMR16_PWM_TC_CTRL_MR3)
+    //
+	// Note: When the match outputs are selected to serve as PWM outputs, the timer reset
+	// (MRnR) and timer stop (MRnS) bits in the Match Control Register MCR must be set to 0
+	// except for the match register setting the PWM cycle length. For this register, set the
+	// MRnR bit to 1 to enable the timer reset when the timer value matches the value of the
+	// corresponding match register.
+
 	uint32_t  timerCounterActionOnMatch;
+
 
 	uint8_t tmrPrescaler;    //todo add description how to calculate.
 

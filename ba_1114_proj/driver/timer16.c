@@ -548,8 +548,6 @@ void TMR16_PWMInit(TMR16_PWMConfig_t *PWMCfg)
     	    }
 
     	}
-
-
     }
 
 
@@ -560,19 +558,84 @@ void TMR16_PWMInit(TMR16_PWMConfig_t *PWMCfg)
 
 void TMR16_PWMDeInit(TMR16_PWMConfig_t *PWMCfg)
 {
+	// Stop counter
+	PWMCfg->Device->TCR = 0;
+
+	//todo Switch off system clock for the Timer
+    if (PWMCfg->Device == LPC_TMR16B0)
+    {
+    	// Disable clock for timer
+    	//todo check is it working
+    	LPC_SYSCON->SYSAHBCLKCTRL &= ~((uint32_t)(1U << 7));
+    }
+    else
+    {
+    	// Disable clock for timer
+    	//todo check is it working
+    	LPC_SYSCON->SYSAHBCLKCTRL &= ~((uint32_t)(1U << 8));
+    }
+
     // Erase registers
+	PWMCfg->Device->MCR = 0;
+	PWMCfg->Device->EMR = 0;
+	PWMCfg->Device->PWMC = 0;
+
 }
 
 
 void TMR16_PWMSetCycle(TMR16_PWMConfig_t *PWMCfg)
 {
     //todo check is timer counter should be stopped before
+    // Because Match Register 3 has not assigned pin output,
+    // this is used to count PWM cycle.
+    PWMCfg->Device->MR3 = PWMCfg->pwmCycle_us;
 }
 
 
 void TMR16_PWMSetDuty(TMR16_PWMConfig_t *PWMCfg)
 {
     //todo check is timer counter should be stopped before
+    if (PWMCfg->Device == LPC_TMR16B0)
+    {
+    	switch (PWMCfg->PWMChannel)
+    	{
+    	    case TMR16_PWM_CH0:
+    	    {
+    	    	PWMCfg->Device->MR0 = PWMCfg->pwmDuty_us;
+    	    	break;
+    	    }
+
+    	    case TMR16_PWM_CH1:
+    	    {
+    	    	PWMCfg->Device->MR1 = PWMCfg->pwmDuty_us;
+    	    	break;
+    	    }
+
+    	    case TMR16_PWM_CH2:  //todo not sure is channel 2 supported here or at TMR1
+    	    {
+    	    	PWMCfg->Device->MR2 = PWMCfg->pwmDuty_us;
+    	    	break;
+    	    }
+    	}
+    }
+    else if (PWMCfg->Device == LPC_TMR16B1)
+    {
+    	switch (PWMCfg->PWMChannel)
+    	{
+    	    case TMR16_PWM_CH0:
+    	    {
+    	    	PWMCfg->Device->MR0 = PWMCfg->pwmDuty_us;
+    	    	break;
+    	    }
+
+    	    case TMR16_PWM_CH1:
+    	    {
+    	    	PWMCfg->Device->MR1 = PWMCfg->pwmDuty_us;
+    	    	break;
+    	    }
+    	}
+    }
+
 }
 
 
