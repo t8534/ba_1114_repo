@@ -62,7 +62,6 @@ void TMR16_Init(uint8_t timer_num, uint16_t timerInterval);
 void TMR16_InitPWM(uint8_t timer_num, uint32_t period, uint8_t match_enable, uint8_t cap_enabled);
 void TMR16_SetMatchPWM (uint8_t timer_num, uint8_t match_nr, uint32_t value);
 
-
 ////////////////////////////////////////////////////////////
 // PWM section
 
