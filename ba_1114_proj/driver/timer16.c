@@ -451,8 +451,9 @@ void TMR16_SetMatchPWM(uint8_t timer_num, uint8_t match_nr, uint32_t value)
 
 }
 
-
+/////////////////////////////////////////////////////////////////
 // New version for PWM
+/////////////////////////////////////////////////////////////////
 
 void TMR16_PWMInit(TMR16_PWMConfig_t *PWMCfg)
 {
@@ -460,21 +461,98 @@ void TMR16_PWMInit(TMR16_PWMConfig_t *PWMCfg)
 	// Disable timer
 	PWMCfg->Device->TCR = 0;
 
+	//todo add to reset registers
+
+    PWMCfg->Device->PR = PWMCfg->tmrPrescaler;
+    // Because Match Register 3 has not assigned pin output,
+    // this is used to count PWM cycle.
+    PWMCfg->Device->MR3 = PWMCfg->pwmCycle_us;
+
+    // Enable Match Register output flag to physical uP pin.
+    // Configure behaviour of the output pin.
+    PWMCfg->Device->EMR = PWMCfg->PWMChannelPinEnable | (PWMCfg->PWMPinMode  << 4);
+
+    // Set output pin as a PWM (PWMC)
+    PWMCfg->Device->PWMC = PWMCfg->PWMChannelPinPWMMode;
+
+	// Set TC control register
+    PWMCfg->Device->MCR |= PWMCfg->timerCounterActionOnMatch;
+
 
     if (PWMCfg->Device == LPC_TMR16B0)
     {
     	// Enable clock for timer
     	LPC_SYSCON->SYSAHBCLKCTRL |= (1 << 7);
+
+    	switch (PWMCfg->PWMChannel)
+    	{
+    	    case TMR16_PWM_CH0:
+    	    {
+    	    	PWMCfg->Device->MR0 = PWMCfg->pwmDuty_us;
+
+    	    	LPC_IOCON->PIO0_8 &= ~0x07;
+    			LPC_IOCON->PIO0_8 |= 0x02;
+
+    	    	break;
+    	    }
+
+    	    case TMR16_PWM_CH1:
+    	    {
+    	    	PWMCfg->Device->MR1 = PWMCfg->pwmDuty_us;
+
+    			LPC_IOCON->PIO0_9 &= ~0x07;
+    			LPC_IOCON->PIO0_9 |= 0x02;
+
+    	    	break;
+    	    }
+
+    	    case TMR16_PWM_CH2:  //todo not sure is channel 2 supported here or at TMR1
+    	    {
+    	    	PWMCfg->Device->MR2 = PWMCfg->pwmDuty_us;
+
+    			LPC_IOCON->PIO0_10 &= ~0x07;
+    			LPC_IOCON->PIO0_10 |= 0x03;
+
+    	    	break;
+    	    }
+    	}
+
+
     }
     else if (PWMCfg->Device == LPC_TMR16B1)
     {
     	// Enable clock for timer
     	LPC_SYSCON->SYSAHBCLKCTRL |= (1 << 8);
+
+
+    	switch (PWMCfg->PWMChannel)
+    	{
+    	    case TMR16_PWM_CH0:
+    	    {
+    	    	PWMCfg->Device->MR0 = PWMCfg->pwmDuty_us;
+
+    			LPC_IOCON->PIO1_9 &= ~0x07;
+    			LPC_IOCON->PIO1_9 |= 0x01;
+
+    	    	break;
+    	    }
+
+    	    case TMR16_PWM_CH1:
+    	    {
+    	    	PWMCfg->Device->MR1 = PWMCfg->pwmDuty_us;
+
+    			LPC_IOCON->PIO1_10 &= ~0x07;
+    			LPC_IOCON->PIO1_10 |= 0x02;
+
+    	    	break;
+    	    }
+
+    	}
+
+
     }
 
 
-    PWMCfg->Device->PR = PWMCfg->tmrPrescaler;
-    PWMCfg->Device->MR0 = pwmCycle_us;    // set PWM cycle
 
 
 }
@@ -482,32 +560,31 @@ void TMR16_PWMInit(TMR16_PWMConfig_t *PWMCfg)
 
 void TMR16_PWMDeInit(TMR16_PWMConfig_t *PWMCfg)
 {
-
+    // Erase registers
 }
 
 
 void TMR16_PWMSetCycle(TMR16_PWMConfig_t *PWMCfg)
 {
-
+    //todo check is timer counter should be stopped before
 }
 
 
 void TMR16_PWMSetDuty(TMR16_PWMConfig_t *PWMCfg)
 {
-
+    //todo check is timer counter should be stopped before
 }
 
 
 void TMR16_PWMEnable(TMR16_PWMConfig_t *PWMCfg)
 {
-
+	PWMCfg->Device->TCR = 1;
 }
 
 
 void TMR16_PWMDisable(TMR16_PWMConfig_t *PWMCfg)
 {
-
-
+	PWMCfg->Device->TCR = 0;
 }
 
 
