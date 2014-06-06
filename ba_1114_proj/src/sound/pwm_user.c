@@ -9,26 +9,27 @@
 
 // The output current is 3-4 mA, max 45-50 mA
 
+/////////////////////////////////////////////////////////////////////////////
 //
 // The Timer1 16 bit is used for sound generation.
-
+//
 // The Timer1 input clock = SystemClock = 48 MHz
-// With prescaler register PR = 48 it means the Timer
-// clock cycle, after divide by 48 equals 1 us.
+// With prescaler register PR = 48 it means the Timer clock cycle, after divide
+// by 48 equals 1 us.
 // So the Timer cycle is 1 us.
 // This is enough resolution for sound generator.
 // 1 kHz this is 1 ms cycle.
 // With 1 us cycle resolution this is 0.001 kHz -> 1 Hz resolution.
 // Also with PWM cycle = 1 us, the frequency (max) is 1 MHz
 //
+///////////////////////////////////////////////////////////////////////////////
 
-// MAT0 reg is used to define PWM cycle
-// MAT1 define duration time.
-// Duration is volume level. Initialized to 1/2 of cycle.
-// MAT1 define second part of cycle. The PWM cycle start
-// always with Low.
+///////////////////////////////////////////////////////////////////////////////
 //
-// TIMER1 MAT1 is output pin - P1.10 (FUNC = 0x02, MODE = 0x02 (default pull-up resistor) )
+// In the PWM mode, following on UM10398 this is working as below:
+//
+// Note [UM10398, p.343]: It is recommended to use match channel 3 to set
+// the PWM cycle because it is not pinned out.
 //
 // PWM signal starts always from Low level. On all configured
 // MATx outputs this is set to Low. Than after reach any MATx register,
@@ -42,8 +43,27 @@
 // match MAT0, the Timer will be reset. And because of Timer reset,
 // all MATx pins goes back to Low.
 //
+///////////////////////////////////////////////////////////////////////////////
 
-// The Timer driver is hard set and this is need to reconfigure is as well.
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// Finally settings.
+//
+// MAT3 register is used to define PWM cycle because it is not related to any
+// output pin.
+// PWM Channel 0 is used (PWMEN0) - MAT0 define duration time.
+// Duration is related to the volume level. This is initialized to 1/2 of cycle.
+// MAT0 define second part of cycle. The PWM cycle starting always with Low.
+//
+// TIMER1 MAT0 is output pin - P1.9 (FUNC = 0x01, MODE = 0x02 (default pull-up resistor) )
+//
+///////////////////////////////////////////////////////////////////////////////
+
+
+
+
+//todo The Timer driver is hard set and this is need to reconfigure is as well.
 
 
 

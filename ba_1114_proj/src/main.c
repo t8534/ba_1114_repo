@@ -195,15 +195,22 @@ int main (void)
 
 
     //todo Set TMR16_PWMConfig
+    // PWM Cycle counter match register - MAT3
+    // PWM output - Channel 0
+    // Prescaler
     PWMCfg.Device = LPC_TMR16B1;
-    PWMCfg.PWMChannel
-    PWMCfg.PWMChannelPinEnable
-    PWMCfg.PWMChannelPinPWMMode
-    PWMCfg.PWMPinMode
-    PWMCfg.pwmCycle_us
-    PWMCfg.pwmDuty_us
-    PWMCfg.timerCounterActionOnMatch
-    PWMCfg.tmrPrescaler
+    PWMCfg.PWMChannel = TMR16_PWM_CH0;
+    PWMCfg.PWMChannelPinEnable = TMR16_PWM_CH0_PIN_ENABLE;    // pin - P1.9
+    PWMCfg.PWMChannelPinPWMMode = TMR16_PWM_CH0_PIN_PWM_MODE;
+
+    // PWM cycle starts Low, after match MAT0 is goes to High, than after match
+    // MAT3 (PWM cycle period) is goes Low.
+    PWMCfg.PWMPinMode = TMR16_PWM_OUT_HIGH;
+
+    PWMCfg.pwmCycle_us = 1000;    // 1 khz = 1 ms = 1000 us (MAT3)
+    PWMCfg.pwmDuty_us = 500;      // 50% of Cycle. (MAT0)
+    PWMCfg.timerCounterActionOnMatch = TMR16_PWM_TC_RESET;
+    PWMCfg.tmrPrescaler = 48;
 
     TMR16_PWMInit(&PWMCfg);
     TMR16_PWMEnable(&PWMCfg);
