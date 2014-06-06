@@ -170,6 +170,7 @@
 #include "spi_tests.h"
 #include "mpl115a.h"
 
+#include "timer16.h"
 
 
 /******************************************************************************
@@ -182,6 +183,8 @@ int main (void)
 	uint32_t i = 0;
 	uint32_t k = 0;
 
+	TMR16_PWMConfig_t  PWMCfg;
+
 
     SystemInit();
     /* LED test output*/
@@ -191,8 +194,23 @@ int main (void)
     GPIOSetValue(LED_PORT, LED_BIT, LED_OFF);
 
 
+    //todo Set TMR16_PWMConfig
+    PWMCfg.Device = LPC_TMR16B1;
+    PWMCfg.PWMChannel
+    PWMCfg.PWMChannelPinEnable
+    PWMCfg.PWMChannelPinPWMMode
+    PWMCfg.PWMPinMode
+    PWMCfg.pwmCycle_us
+    PWMCfg.pwmDuty_us
+    PWMCfg.timerCounterActionOnMatch
+    PWMCfg.tmrPrescaler
 
-#if 1
+    TMR16_PWMInit(&PWMCfg);
+    TMR16_PWMEnable(&PWMCfg);
+
+
+
+#if 0
     MPL115AIntitalize();
     MPL115AReadCoeffs();
     GPIOSetValue(LED_PORT, LED_BIT, LED_ON);

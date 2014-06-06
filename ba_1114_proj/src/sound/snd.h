@@ -1,4 +1,4 @@
-
+#include "type.h"
 
 void SND_Init(void);
 void SND_DeInit(void);

@@ -1,4 +1,4 @@
-
+#include "type.h"
 
 void PWMUSR_Init(uint16_t cycle_ms);
 void PWMUSR_DeInit(void);

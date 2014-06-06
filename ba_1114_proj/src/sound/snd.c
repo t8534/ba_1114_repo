@@ -1,4 +1,6 @@
-
+#include "driver_config.h"  //todo describe this include MUST BE, and if SSP driver will be not ON in there,
+                            // than all the ssp.h and .c file will be not add to compile, so during compilation
+                            // of this file, there will be error. This approach is very buggy.
 #include "snd.h"
 
 

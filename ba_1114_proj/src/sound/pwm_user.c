@@ -1,3 +1,7 @@
+#include "driver_config.h"  //todo describe this include MUST BE, and if SSP driver will be not ON in there,
+                            // than all the ssp.h and .c file will be not add to compile, so during compilation
+                            // of this file, there will be error. This approach is very buggy.
+
 #include "timer16.h"
 #include "pwm_user.h"
 
@@ -49,10 +53,10 @@
 void PWMUSR_Init(uint16_t cycle_ms)
 {
 
-	init_timer16PWM(uint8_t timer_num, uint32_t period, uint8_t match_enable, uint8_t cap_enabled);
-	setMatch_timer16PWM (uint8_t timer_num, uint8_t match_nr, uint32_t value);
+	//init_timer16PWM(uint8_t timer_num, uint32_t period, uint8_t match_enable, uint8_t cap_enabled);
+	//setMatch_timer16PWM(uint8_t timer_num, uint8_t match_nr, uint32_t value);
 
-	disable_timer16(uint8_t timer_num);
+	//disable_timer16(uint8_t timer_num);
     // this is disabled here
 }
 
@@ -78,14 +82,14 @@ void PWMUSR_Set(uint16_t cycle_ms, uint16_t duration_ms)
 	// start pwm
 
 
-	void enable_timer16(uint8_t timer_num);
-	void disable_timer16(uint8_t timer_num);
-	void reset_timer16(uint8_t timer_num);
-	void init_timer16(uint8_t timer_num, uint16_t timerInterval);
-	void setMatch_timer16(uint8_t timer_num, uint8_t match_nr, uint32_t value);
+	//void enable_timer16(uint8_t timer_num);
+	//void disable_timer16(uint8_t timer_num);
+	//void reset_timer16(uint8_t timer_num);
+	//void init_timer16(uint8_t timer_num, uint16_t timerInterval);
+	//void setMatch_timer16(uint8_t timer_num, uint8_t match_nr, uint32_t value);
 
-	void init_timer16PWM(uint8_t timer_num, uint32_t period, uint8_t match_enable, uint8_t cap_enabled);
-	void setMatch_timer16PWM (uint8_t timer_num, uint8_t match_nr, uint32_t value);
+	//void init_timer16PWM(uint8_t timer_num, uint32_t period, uint8_t match_enable, uint8_t cap_enabled);
+	//void setMatch_timer16PWM (uint8_t timer_num, uint8_t match_nr, uint32_t value);
 
 }
 

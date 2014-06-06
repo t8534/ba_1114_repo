@@ -510,8 +510,8 @@ void TMR16_PWMInit(TMR16_PWMConfig_t *PWMCfg)
     	    {
     	    	PWMCfg->Device->MR2 = PWMCfg->pwmDuty_us;
 
-    			LPC_IOCON->PIO0_10 &= ~0x07;
-    			LPC_IOCON->PIO0_10 |= 0x03;
+    			LPC_IOCON->SWCLK_PIO0_10 &= ~0x07;
+    			LPC_IOCON->SWCLK_PIO0_10 |= 0x03;
 
     	    	break;
     	    }
